@@ -1,0 +1,221 @@
+version: "1.0"
+
+# DNS record check examples
+healthchecks:
+  # Basic A record check
+  - name: "website-dns"
+    type: "dns"
+    hostname: "example.com"
+    record_type: "A"
+    nameservers:
+      - "8.8.8.8"  # Google DNS
+      - "8.8.4.4"
+    expected_values:
+      - "192.0.2.1"
+      - "192.0.2.2"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+        message: |
+          DNS check failed for {{check.hostname}}
+          Record Type: {{check.record_type}}
+          Expected: {{check.expected_values}}
+          Actual: {{check.actual_values}}
+      resolution_time:
+        enabled: true
+        threshold: 100  # ms
+    tags:
+      - "env:production"
+      - "service:website"
+
+  # CNAME record check
+  - name: "www-dns"
+    type: "dns"
+    hostname: "www.example.com"
+    record_type: "CNAME"
+    nameservers:
+      - "1.1.1.1"  # Cloudflare DNS
+      - "1.0.0.1"
+    expected_values:
+      - "example.com."
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+    tags:
+      - "env:production"
+      - "service:website"
+
+  # MX record check
+  - name: "mail-dns"
+    type: "dns"
+    hostname: "example.com"
+    record_type: "MX"
+    nameservers:
+      - "8.8.8.8"
+      - "8.8.4.4"
+    expected_values:
+      - "10 mail1.example.com."
+      - "20 mail2.example.com."
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+    tags:
+      - "env:production"
+      - "service:mail"
+
+  # TXT record check for SPF
+  - name: "spf-dns"
+    type: "dns"
+    hostname: "example.com"
+    record_type: "TXT"
+    nameservers:
+      - "8.8.8.8"
+      - "8.8.4.4"
+    expected_values:
+      - "v=spf1 include:_spf.example.com ~all"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+        message: |
+          SPF record check failed for {{check.hostname}}
+          Expected: {{check.expected_values}}
+          Actual: {{check.actual_values}}
+    tags:
+      - "env:production"
+      - "service:mail"
+      - "type:spf"
+
+  # Multi-record check
+  - name: "multi-dns"
+    type: "dns"
+    records:
+      - hostname: "example.com"
+        type: "A"
+        expected:
+          - "192.0.2.1"
+          - "192.0.2.2"
+      - hostname: "www.example.com"
+        type: "CNAME"
+        expected:
+          - "example.com."
+      - hostname: "mail.example.com"
+        type: "MX"
+        expected:
+          - "10 mail.example.com."
+    nameservers:
+      - "8.8.8.8"
+      - "8.8.4.4"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+      resolution_time:
+        enabled: true
+        threshold: 200  # Higher threshold for multi-record check
+    tags:
+      - "env:production"
+      - "type:multi-dns"
+
+  # DNSSEC validation check
+  - name: "dnssec-check"
+    type: "dns"
+    hostname: "example.com"
+    record_type: "DNSKEY"
+    nameservers:
+      - "8.8.8.8"
+      - "8.8.4.4"
+    dnssec:
+      enabled: true
+      validate_chain: true
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+      security:
+        enabled: true
+        message: |
+          DNSSEC validation failed for {{check.hostname}}
+          Error: {{check.error}}
+          DNSKEY: {{check.dnskey}}
+    tags:
+      - "env:production"
+      - "type:dnssec"
+      - "security:high"
+
+  # DNS propagation check
+  - name: "propagation-check"
+    type: "dns"
+    hostname: "api.example.com"
+    record_type: "A"
+    expected_values:
+      - "192.0.2.10"
+    nameservers:
+      - "8.8.8.8"   # Google
+      - "1.1.1.1"   # Cloudflare
+      - "9.9.9.9"   # Quad9
+      - "208.67.222.222"  # OpenDNS
+    check_all_servers: true
+    propagation:
+      required_agreement: 0.75  # 75% of servers must agree
+      max_check_time: 3600  # 1 hour
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+      propagation:
+        enabled: true
+        threshold: 0.75
+        message: |
+          DNS propagation check failed for {{check.hostname}}
+          Agreement: {{check.agreement_percentage}}%
+          Required: 75%
+    tags:
+      - "env:production"
+      - "type:propagation"
+
+# Default settings for all DNS checks
+defaults:
+  type: "dns"
+  nameservers:
+    - "8.8.8.8"
+    - "8.8.4.4"
+  resolution_timeout: 5
+  check_all_servers: false
+  monitors:
+    availability:
+      enabled: true
+      threshold: 99.9
+  tags:
+    - "managed-by:dd-healthcheck"
+    - "type:dns"
+
+# Templates for common DNS check configurations
+templates:
+  basic_dns:
+    type: "dns"
+    nameservers:
+      - "8.8.8.8"
+      - "8.8.4.4"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+
+  secure_dns:
+    type: "dns"
+    nameservers:
+      - "8.8.8.8"
+      - "8.8.4.4"
+    dnssec:
+      enabled: true
+      validate_chain: true
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+      security:
+        enabled: true 

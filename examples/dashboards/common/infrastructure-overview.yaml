@@ -1,0 +1,116 @@
+version: "1.0"
+
+dashboard:
+  title: "Infrastructure Overview"
+  description: "Cross-platform infrastructure monitoring dashboard"
+  layout_type: "ordered"
+  widgets:
+    # System Health Overview
+    - title: "System Health Status"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Host Status"
+          type: "query_value"
+          query: "sum:datadog.agent.running{*}.fill(0)"
+          precision: 0
+          text_align: "center"
+          
+        - title: "Total Hosts"
+          type: "query_value"
+          query: "sum:system.cpu.idle{*}.fill(0).by_host"
+          precision: 0
+          text_align: "center"
+          
+        - title: "Critical Alerts"
+          type: "query_value"
+          query: "sum:monitor.alerts{status:critical}.as_count()"
+          precision: 0
+          text_align: "center"
+
+    # CPU Metrics
+    - title: "CPU Utilization"
+      type: "timeseries"
+      layout:
+        height: 3
+        width: 6
+      query: |
+        avg:system.cpu.user{*} by {host}.fill(null, 0),
+        avg:system.cpu.system{*} by {host}.fill(null, 0),
+        avg:system.cpu.iowait{*} by {host}.fill(null, 0)
+      options:
+        display_type: "line"
+        overlay: true
+
+    # Memory Usage
+    - title: "Memory Usage"
+      type: "timeseries"
+      layout:
+        height: 3
+        width: 6
+      query: |
+        avg:system.mem.used{*} by {host}.fill(null, 0),
+        avg:system.mem.total{*} by {host}.fill(null, 0)
+      options:
+        display_type: "area"
+
+    # Disk Usage
+    - title: "Disk Usage by Host"
+      type: "timeseries"
+      layout:
+        height: 3
+        width: 6
+      query: "avg:system.disk.used{*} by {host,device}.fill(null, 0)"
+      options:
+        display_type: "line"
+
+    # Network Traffic
+    - title: "Network Traffic"
+      type: "timeseries"
+      layout:
+        height: 3
+        width: 6
+      query: |
+        avg:system.net.bytes_rcvd{*} by {host}.fill(null, 0),
+        avg:system.net.bytes_sent{*} by {host}.fill(null, 0)
+      options:
+        display_type: "area"
+
+    # Health Checks Status
+    - title: "Health Checks Status"
+      type: "check_status"
+      layout:
+        height: 4
+        width: 12
+      check: "health"
+      grouping: "check"
+      tags: ["*"]
+
+    # Top Processes
+    - title: "Top Processes by CPU"
+      type: "toplist"
+      layout:
+        height: 4
+        width: 6
+      query: "top(avg:system.processes.cpu.pct{*} by {process}, 10, 'mean', 'desc')"
+
+    # Top Processes by Memory
+    - title: "Top Processes by Memory"
+      type: "toplist"
+      layout:
+        height: 4
+        width: 6
+      query: "top(avg:system.processes.mem.pct{*} by {process}, 10, 'mean', 'desc')"
+
+  template_variables:
+    - name: "host"
+      prefix: "host"
+      default: "*"
+    - name: "environment"
+      prefix: "env"
+      default: "production"
+
+  time:
+    live_span: "1h" 

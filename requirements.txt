@@ -1,0 +1,6 @@
+datadog>=0.44.0
+pyyaml>=6.0
+click>=8.0
+requests>=2.26.0
+jsonschema>=4.0.0
+typing-extensions>=4.0.0 
