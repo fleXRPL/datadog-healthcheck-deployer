@@ -1,0 +1,200 @@
+version: "1.0"
+
+# Basic HTTP health check examples
+healthchecks:
+  # Simple API health check
+  - name: "api-health"
+    type: "http"
+    url: "https://api.example.com/health"
+    frequency: 60
+    locations:
+      - "aws:us-east-1"
+      - "aws:eu-west-1"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+      latency:
+        enabled: true
+        threshold: 500
+    tags:
+      - "env:production"
+      - "service:api"
+
+  # Authenticated API check with custom headers
+  - name: "auth-api-health"
+    type: "http"
+    url: "https://api.example.com/v1/status"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer ${API_TOKEN}"
+      X-API-Version: "1.0"
+    body: |
+      {
+        "service": "payment",
+        "environment": "production"
+      }
+    success_criteria:
+      - status_code: 200
+      - response_time: 1000
+      - content:
+          type: "json"
+          path: "$.status"
+          operator: "equals"
+          value: "healthy"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.95
+        message: |
+          Payment API health check failed
+          Status: {{check.status}}
+          Error: {{check.error}}
+          Response Time: {{check.response_time}}ms
+      latency:
+        enabled: true
+        threshold: 300
+    tags:
+      - "env:production"
+      - "service:payment"
+      - "team:platform"
+
+  # Multi-step API check
+  - name: "multi-step-api"
+    type: "http"
+    steps:
+      - name: "Authentication"
+        url: "https://api.example.com/auth"
+        method: "POST"
+        headers:
+          Content-Type: "application/json"
+        body: |
+          {
+            "username": "${API_USER}",
+            "password": "${API_PASSWORD}"
+          }
+        extract:
+          token: "$.access_token"
+
+      - name: "Get User"
+        url: "https://api.example.com/users/me"
+        method: "GET"
+        headers:
+          Authorization: "Bearer {{steps.Authentication.token}}"
+        success_criteria:
+          - status_code: 200
+          - content:
+              type: "json"
+              path: "$.active"
+              operator: "equals"
+              value: true
+
+      - name: "Logout"
+        url: "https://api.example.com/logout"
+        method: "POST"
+        headers:
+          Authorization: "Bearer {{steps.Authentication.token}}"
+        success_criteria:
+          - status_code: 200
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+      latency:
+        enabled: true
+        threshold: 2000  # Higher threshold for multi-step check
+    tags:
+      - "env:production"
+      - "service:auth"
+      - "type:multi-step"
+
+  # Website availability check
+  - name: "website-health"
+    type: "http"
+    url: "https://www.example.com"
+    method: "GET"
+    follow_redirects: true
+    verify_ssl: true
+    success_criteria:
+      - status_code: 200
+      - response_time: 2000
+      - content:
+          type: "text"
+          operator: "contains"
+          value: "Welcome to Example"
+    locations:
+      - "aws:us-east-1"
+      - "aws:us-west-2"
+      - "aws:eu-west-1"
+      - "aws:ap-southeast-1"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.99
+        warning_threshold: 99.995
+        no_data_timeframe: 10
+        notify_no_data: true
+        renotify_interval: 60
+      latency:
+        enabled: true
+        threshold: 2000
+        warning_threshold: 1000
+    tags:
+      - "env:production"
+      - "service:website"
+      - "criticality:high"
+
+  # GraphQL API check
+  - name: "graphql-api"
+    type: "http"
+    url: "https://api.example.com/graphql"
+    method: "POST"
+    headers:
+      Content-Type: "application/json"
+      Authorization: "Bearer ${API_TOKEN}"
+    body: |
+      {
+        "query": "query { health { status uptime } }"
+      }
+    success_criteria:
+      - status_code: 200
+      - response_time: 500
+      - content:
+          type: "json"
+          path: "$.data.health.status"
+          operator: "equals"
+          value: "healthy"
+    retry:
+      count: 2
+      interval: 10
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+      latency:
+        enabled: true
+        threshold: 500
+    tags:
+      - "env:production"
+      - "service:graphql"
+      - "type:api"
+
+# Variables for the health checks
+variables:
+  API_TOKEN: "${DD_API_TOKEN}"
+  API_USER: "healthcheck"
+  API_PASSWORD: "${DD_API_PASSWORD}"
+
+# Default settings for all health checks
+defaults:
+  frequency: 60
+  timeout: 30
+  retry:
+    count: 2
+    interval: 5
+  locations:
+    - "aws:us-east-1"
+  tags:
+    - "managed-by:dd-healthcheck"
+    - "env:production" 

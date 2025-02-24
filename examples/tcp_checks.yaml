@@ -1,0 +1,194 @@
+version: "1.0"
+
+# TCP service check examples
+healthchecks:
+  # Basic TCP port check
+  - name: "database-connection"
+    type: "tcp"
+    hostname: "db.example.com"
+    port: 5432
+    timeout: 5
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.99
+        message: |
+          Database connection check failed
+          Host: {{check.hostname}}
+          Port: {{check.port}}
+          Error: {{check.error}}
+    tags:
+      - "env:production"
+      - "service:database"
+      - "type:postgres"
+
+  # Redis connection check with authentication
+  - name: "redis-connection"
+    type: "tcp"
+    hostname: "redis.example.com"
+    port: 6379
+    timeout: 5
+    send_string: "AUTH ${REDIS_PASSWORD}\r\nPING\r\n"
+    expect_string: "+PONG\r\n"
+    retry:
+      count: 3
+      interval: 5
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.99
+      latency:
+        enabled: true
+        threshold: 50  # ms
+    tags:
+      - "env:production"
+      - "service:redis"
+      - "type:cache"
+
+  # SMTP server check
+  - name: "smtp-check"
+    type: "tcp"
+    hostname: "smtp.example.com"
+    port: 587
+    timeout: 10
+    ssl: true
+    send_string: "EHLO example.com\r\n"
+    expect_string: "220"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+        message: |
+          SMTP server check failed
+          Host: {{check.hostname}}
+          Port: {{check.port}}
+          Response: {{check.response}}
+    tags:
+      - "env:production"
+      - "service:mail"
+      - "type:smtp"
+
+  # Multi-port service check
+  - name: "multi-port-check"
+    type: "tcp"
+    hostname: "service.example.com"
+    ports:
+      - port: 80
+        name: "HTTP"
+      - port: 443
+        name: "HTTPS"
+        ssl: true
+      - port: 5432
+        name: "PostgreSQL"
+      - port: 6379
+        name: "Redis"
+    timeout: 5
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+        message: |
+          Service port check failed
+          Host: {{check.hostname}}
+          Port: {{check.port}}
+          Service: {{check.service}}
+    tags:
+      - "env:production"
+      - "type:multi-port"
+
+  # Secure service check with SSL/TLS
+  - name: "secure-service"
+    type: "tcp"
+    hostname: "secure.example.com"
+    port: 636
+    timeout: 10
+    ssl: true
+    ssl_config:
+      verify: true
+      protocols:
+        - "TLSv1.2"
+        - "TLSv1.3"
+      cipher_suites:
+        - "TLS_AES_256_GCM_SHA384"
+        - "TLS_CHACHA20_POLY1305_SHA256"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.99
+      security:
+        enabled: true
+        message: |
+          Secure service check failed
+          Host: {{check.hostname}}
+          Port: {{check.port}}
+          Protocol: {{check.protocol}}
+          Cipher: {{check.cipher}}
+    tags:
+      - "env:production"
+      - "service:ldap"
+      - "security:high"
+
+  # Custom protocol check
+  - name: "memcached-check"
+    type: "tcp"
+    hostname: "cache.example.com"
+    port: 11211
+    timeout: 5
+    send_string: "stats\r\n"
+    expect_string: "STAT"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+      latency:
+        enabled: true
+        threshold: 50
+    tags:
+      - "env:production"
+      - "service:cache"
+      - "type:memcached"
+
+# Default settings for all TCP checks
+defaults:
+  type: "tcp"
+  timeout: 5
+  retry:
+    count: 2
+    interval: 5
+  monitors:
+    availability:
+      enabled: true
+      threshold: 99.9
+  tags:
+    - "managed-by:dd-healthcheck"
+    - "type:tcp"
+
+# Templates for common TCP check configurations
+templates:
+  basic_tcp:
+    type: "tcp"
+    timeout: 5
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+
+  secure_tcp:
+    type: "tcp"
+    timeout: 10
+    ssl: true
+    ssl_config:
+      verify: true
+      protocols:
+        - "TLSv1.2"
+        - "TLSv1.3"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.99
+      security:
+        enabled: true
+
+# Variables for the TCP checks
+variables:
+  REDIS_PASSWORD: "${DD_REDIS_PASSWORD}" 

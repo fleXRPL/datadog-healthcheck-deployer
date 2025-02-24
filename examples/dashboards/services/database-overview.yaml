@@ -1,0 +1,137 @@
+version: "1.0"
+
+dashboard:
+  title: "Database Performance Overview"
+  description: "Cross-platform database monitoring dashboard"
+  layout_type: "ordered"
+  widgets:
+    # Database Health Overview
+    - title: "Database Health Status"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Active Connections"
+          type: "query_value"
+          query: |
+            sum:aws.rds.database_connections{$database_type},
+            sum:azure.sql_servers_databases.connection_successful{$database_type},
+            sum:gcp.cloudsql.database.connections{$database_type}
+          precision: 0
+          text_align: "center"
+          
+        - title: "Database Status"
+          type: "check_status"
+          check: "database.can_connect"
+          grouping: "cluster"
+          tags: ["$database_type"]
+          
+        - title: "Replication Lag"
+          type: "query_value"
+          query: |
+            max:aws.rds.replica_lag{$database_type},
+            max:azure.sql_servers_databases.replica_lag{$database_type},
+            max:gcp.cloudsql.database.replica_lag{$database_type}
+          precision: 2
+          text_align: "center"
+
+    # Connection Metrics
+    - title: "Connection Pool Status"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Active Sessions"
+          type: "timeseries"
+          query: |
+            avg:postgresql.connections.active{$database_type} by {host},
+            avg:mysql.net.connections{$database_type} by {host},
+            avg:sqlserver.active_connections{$database_type} by {host}
+          
+        - title: "Connection Pool Utilization"
+          type: "timeseries"
+          query: |
+            avg:postgresql.connections.percent_used{$database_type} by {host},
+            avg:mysql.net.max_connections_percent{$database_type} by {host},
+            avg:sqlserver.connection_pool_percent{$database_type} by {host}
+
+    # Query Performance
+    - title: "Query Performance"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Query Throughput"
+          type: "timeseries"
+          query: |
+            avg:postgresql.queries.count{$database_type} by {host}.as_rate(),
+            avg:mysql.queries.count{$database_type} by {host}.as_rate(),
+            avg:sqlserver.batch_requests{$database_type} by {host}.as_rate()
+          
+        - title: "Slow Queries"
+          type: "timeseries"
+          query: |
+            sum:postgresql.queries.slow{$database_type} by {host}.as_count(),
+            sum:mysql.slow_queries{$database_type} by {host}.as_count(),
+            sum:sqlserver.slow_queries{$database_type} by {host}.as_count()
+
+    # Storage Metrics
+    - title: "Storage Performance"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "IOPS"
+          type: "timeseries"
+          query: |
+            avg:aws.rds.read_iops{$database_type} by {dbinstanceidentifier},
+            avg:aws.rds.write_iops{$database_type} by {dbinstanceidentifier},
+            avg:azure.sql_servers_databases.io_requests{$database_type} by {server},
+            avg:gcp.cloudsql.database.disk.read_ops_count{$database_type} by {instance_id},
+            avg:gcp.cloudsql.database.disk.write_ops_count{$database_type} by {instance_id}
+          
+        - title: "Storage Usage"
+          type: "timeseries"
+          query: |
+            avg:postgresql.database_size{$database_type} by {database},
+            avg:mysql.database_size{$database_type} by {database},
+            avg:sqlserver.database_size{$database_type} by {database}
+
+    # Cache Performance
+    - title: "Cache Performance"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Buffer Cache Hit Ratio"
+          type: "timeseries"
+          query: |
+            avg:postgresql.buffer_cache.hit_ratio{$database_type} by {host},
+            avg:mysql.innodb.buffer_pool_hit_ratio{$database_type} by {host},
+            avg:sqlserver.buffer.cache_hit_ratio{$database_type} by {host}
+          
+        - title: "Cache Size"
+          type: "timeseries"
+          query: |
+            avg:postgresql.buffer_cache.size{$database_type} by {host},
+            avg:mysql.innodb.buffer_pool_size{$database_type} by {host},
+            avg:sqlserver.buffer.cache_size{$database_type} by {host}
+
+  template_variables:
+    - name: "database_type"
+      prefix: "dbtype"
+      default: "*"
+    - name: "environment"
+      prefix: "env"
+      default: "production"
+    - name: "service"
+      prefix: "service"
+      default: "*"
+
+  time:
+    live_span: "4h" 

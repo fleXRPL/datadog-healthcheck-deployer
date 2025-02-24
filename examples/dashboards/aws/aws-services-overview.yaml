@@ -1,0 +1,136 @@
+version: "1.0"
+
+dashboard:
+  title: "AWS Services Overview"
+  description: "AWS CloudWatch metrics dashboard for key services"
+  layout_type: "ordered"
+  widgets:
+    # EC2 Overview
+    - title: "EC2 Instances Overview"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Running Instances"
+          type: "query_value"
+          query: "sum:aws.ec2.instance.count{state:running}"
+          precision: 0
+          text_align: "center"
+          
+        - title: "CPU Credits Balance"
+          type: "query_value"
+          query: "avg:aws.ec2.cpucredit_balance{*}"
+          precision: 2
+          text_align: "center"
+          
+        - title: "Network In/Out"
+          type: "timeseries"
+          query: |
+            avg:aws.ec2.network_in{*} by {instance_id},
+            avg:aws.ec2.network_out{*} by {instance_id}
+
+    # RDS Metrics
+    - title: "RDS Performance"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Database Connections"
+          type: "timeseries"
+          query: "avg:aws.rds.database_connections{*} by {dbinstanceidentifier}"
+          
+        - title: "Read IOPS"
+          type: "timeseries"
+          query: "avg:aws.rds.read_iops{*} by {dbinstanceidentifier}"
+          
+        - title: "Write IOPS"
+          type: "timeseries"
+          query: "avg:aws.rds.write_iops{*} by {dbinstanceidentifier}"
+
+    # ELB Metrics
+    - title: "Load Balancer Status"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Request Count"
+          type: "timeseries"
+          query: "sum:aws.elb.request_count{*} by {loadbalancer}"
+          
+        - title: "Latency"
+          type: "timeseries"
+          query: "avg:aws.elb.latency{*} by {loadbalancer}"
+          
+        - title: "HTTP 5XX Errors"
+          type: "timeseries"
+          query: "sum:aws.elb.httpcode_elb_5xx{*} by {loadbalancer}"
+
+    # S3 Metrics
+    - title: "S3 Usage"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Bucket Size"
+          type: "timeseries"
+          query: "avg:aws.s3.bucket_size_bytes{*} by {bucket_name}"
+          
+        - title: "Number of Objects"
+          type: "timeseries"
+          query: "avg:aws.s3.number_of_objects{*} by {bucket_name}"
+
+    # Lambda Functions
+    - title: "Lambda Performance"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Invocations"
+          type: "timeseries"
+          query: "sum:aws.lambda.invocations{*} by {functionname}.as_count()"
+          
+        - title: "Errors"
+          type: "timeseries"
+          query: "sum:aws.lambda.errors{*} by {functionname}.as_count()"
+          
+        - title: "Duration"
+          type: "timeseries"
+          query: "avg:aws.lambda.duration{*} by {functionname}"
+
+    # CloudFront Metrics
+    - title: "CloudFront Performance"
+      type: "group"
+      layout:
+        height: 4
+        width: 12
+      widgets:
+        - title: "Requests"
+          type: "timeseries"
+          query: "sum:aws.cloudfront.requests{*} by {distributionid}"
+          
+        - title: "Error Rate"
+          type: "timeseries"
+          query: "sum:aws.cloudfront.4xxerrorrate{*} by {distributionid}"
+          
+        - title: "Download Latency"
+          type: "timeseries"
+          query: "avg:aws.cloudfront.downloadtime{*} by {distributionid}"
+
+  template_variables:
+    - name: "aws_account"
+      prefix: "account"
+      default: "*"
+    - name: "aws_region"
+      prefix: "region"
+      default: "*"
+    - name: "environment"
+      prefix: "env"
+      default: "production"
+
+  time:
+    live_span: "4h" 

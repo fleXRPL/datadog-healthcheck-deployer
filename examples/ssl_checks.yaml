@@ -1,0 +1,181 @@
+version: "1.0"
+
+# SSL certificate check examples
+healthchecks:
+  # Basic SSL certificate check
+  - name: "website-ssl"
+    type: "ssl"
+    hostname: "example.com"
+    port: 443
+    expiry_threshold: 30  # Days
+    check_chain: true
+    monitors:
+      expiration:
+        enabled: true
+        threshold: 7  # Alert when less than 7 days until expiry
+        warning_threshold: 30  # Warn when less than 30 days until expiry
+        message: |
+          SSL certificate for {{check.hostname}} is expiring soon
+          Days remaining: {{check.days_remaining}}
+          Expiry date: {{check.expiry_date}}
+    tags:
+      - "env:production"
+      - "service:website"
+
+  # Advanced SSL check with chain validation
+  - name: "api-ssl"
+    type: "ssl"
+    hostname: "api.example.com"
+    port: 443
+    expiry_threshold: 30
+    check_chain: true
+    expected_issuer: "Let's Encrypt Authority X3"
+    minimum_key_strength: 2048
+    protocols:
+      - "TLSv1.2"
+      - "TLSv1.3"
+    monitors:
+      expiration:
+        enabled: true
+        threshold: 7
+        warning_threshold: 30
+      validity:
+        enabled: true
+        message: |
+          SSL certificate validation failed for {{check.hostname}}
+          Error: {{check.error}}
+          Issuer: {{check.issuer}}
+          Protocol: {{check.protocol}}
+    tags:
+      - "env:production"
+      - "service:api"
+      - "type:ssl"
+
+  # Multi-domain SSL check
+  - name: "wildcard-ssl"
+    type: "ssl"
+    hostname: "*.example.com"
+    port: 443
+    expiry_threshold: 30
+    check_chain: true
+    domains:
+      - "example.com"
+      - "www.example.com"
+      - "api.example.com"
+      - "admin.example.com"
+    monitors:
+      expiration:
+        enabled: true
+        threshold: 7
+        warning_threshold: 30
+      validity:
+        enabled: true
+    tags:
+      - "env:production"
+      - "type:wildcard-ssl"
+
+  # Custom port SSL check
+  - name: "custom-port-ssl"
+    type: "ssl"
+    hostname: "secure.example.com"
+    port: 8443
+    expiry_threshold: 30
+    check_chain: true
+    monitors:
+      expiration:
+        enabled: true
+        threshold: 7
+        warning_threshold: 30
+    tags:
+      - "env:production"
+      - "service:secure-api"
+
+  # SSL check with specific cipher requirements
+  - name: "secure-ssl"
+    type: "ssl"
+    hostname: "banking.example.com"
+    port: 443
+    expiry_threshold: 30
+    check_chain: true
+    minimum_key_strength: 4096
+    protocols:
+      - "TLSv1.3"
+    cipher_suites:
+      required:
+        - "TLS_AES_256_GCM_SHA384"
+        - "TLS_CHACHA20_POLY1305_SHA256"
+      forbidden:
+        - "TLS_RSA_WITH_RC4_128_SHA"
+        - "TLS_RSA_WITH_3DES_EDE_CBC_SHA"
+    monitors:
+      expiration:
+        enabled: true
+        threshold: 7
+        warning_threshold: 30
+      validity:
+        enabled: true
+      security:
+        enabled: true
+        message: |
+          SSL security check failed for {{check.hostname}}
+          Protocol: {{check.protocol}}
+          Cipher: {{check.cipher_suite}}
+          Key Strength: {{check.key_strength}}
+    tags:
+      - "env:production"
+      - "service:banking"
+      - "security:high"
+
+# Default settings for all SSL checks
+defaults:
+  type: "ssl"
+  port: 443
+  expiry_threshold: 30
+  check_chain: true
+  protocols:
+    - "TLSv1.2"
+    - "TLSv1.3"
+  minimum_key_strength: 2048
+  monitors:
+    expiration:
+      enabled: true
+      threshold: 7
+      warning_threshold: 30
+  tags:
+    - "managed-by:dd-healthcheck"
+    - "type:ssl"
+
+# Templates for common SSL check configurations
+templates:
+  basic_ssl:
+    type: "ssl"
+    port: 443
+    expiry_threshold: 30
+    check_chain: true
+    monitors:
+      expiration:
+        enabled: true
+        threshold: 7
+        warning_threshold: 30
+
+  secure_ssl:
+    type: "ssl"
+    port: 443
+    expiry_threshold: 30
+    check_chain: true
+    minimum_key_strength: 4096
+    protocols:
+      - "TLSv1.3"
+    cipher_suites:
+      required:
+        - "TLS_AES_256_GCM_SHA384"
+        - "TLS_CHACHA20_POLY1305_SHA256"
+    monitors:
+      expiration:
+        enabled: true
+        threshold: 7
+        warning_threshold: 30
+      validity:
+        enabled: true
+      security:
+        enabled: true 

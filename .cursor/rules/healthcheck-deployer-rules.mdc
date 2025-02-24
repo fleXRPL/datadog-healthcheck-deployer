@@ -1,0 +1,264 @@
+---
+description: 
+globs: 
+---
+ # DataDog HealthCheck Deployer Development Rules
+
+## Project Structure Requirements
+
+```bash
+datadog-healthcheck-deployer/
+├── src/
+│   └── datadog_healthcheck_deployer/
+│       ├── __init__.py           # Version and package metadata
+│       ├── cli.py                # CLI interface
+│       ├── core.py               # Core functionality
+│       ├── api.py                # DataDog API client
+│       ├── config.py             # Configuration handling
+│       ├── validators/           # Configuration validators
+│       ├── checks/               # Health check implementations
+│       │   ├── http.py          # HTTP checks
+│       │   ├── ssl.py           # SSL checks
+│       │   ├── dns.py           # DNS checks
+│       │   └── tcp.py           # TCP checks
+│       ├── monitors/            # Monitor integration
+│       ├── dashboards/          # Dashboard integration
+│       └── utils/               # Utility functions
+├── tests/                       # Test suite
+│   ├── unit/                   # Unit tests
+│   ├── integration/            # Integration tests
+│   └── fixtures/               # Test fixtures
+├── docs/                       # Documentation
+│   └── wiki/                   # Wiki documentation
+├── examples/                   # Example configurations
+├── scripts/                    # Development scripts
+├── pyproject.toml             # Build configuration
+├── README.md                  # Project documentation
+├── LICENSE                    # MIT License
+├── requirements.txt           # Production dependencies
+└── requirements-dev.txt       # Development dependencies
+```
+
+## Code Quality Standards
+
+### Python Standards
+- Python 3.8+ compatibility required
+- Type hints mandatory for all public APIs
+- Google-style docstrings required
+- Maximum complexity score of 8
+- Line length limit: 100 characters
+- Test coverage minimum: 90%
+
+### Linting and Formatting
+- black for code formatting
+- isort for import sorting
+- flake8 for linting
+- mypy for type checking
+- pylint for code analysis
+- bandit for security checks
+
+### Testing Requirements
+- pytest for test framework
+- pytest-cov for coverage
+- pytest-mock for mocking
+- pytest-asyncio for async tests
+- Integration tests with DataDog API
+- Mocked external services
+
+## Security Requirements
+
+### Code Security
+- Input validation required
+- Output sanitization required
+- Secure credential handling
+- API key management
+- Rate limiting implementation
+- Error handling required
+
+### CI/CD Security
+- Dependency scanning
+- SAST scanning
+- Container scanning
+- Secret scanning
+- License compliance
+- Vulnerability checks
+
+## Documentation Requirements
+
+### Code Documentation
+- Module docstrings
+- Function docstrings
+- Class docstrings
+- Type hints
+- Usage examples
+- Error handling docs
+
+### Project Documentation
+- Installation guide
+- Quick start guide
+- API reference
+- Configuration guide
+- Best practices
+- Troubleshooting guide
+
+## Development Workflow
+
+### Git Workflow
+- Protected main branch
+- Feature branch workflow
+- PR reviews required
+- Conventional commits
+- Semantic versioning
+- Release tagging
+
+### CI/CD Pipeline
+- Automated testing
+- Code quality checks
+- Documentation builds
+- Package publishing
+- Container builds
+- Security scanning
+
+## Package Requirements
+
+### Core Features
+- HTTP health checks
+- SSL certificate checks
+- DNS health checks
+- TCP health checks
+- Monitor integration
+- Dashboard integration
+
+### Integration Features
+- DataDog API client
+- Monitor deployer integration
+- Dashboard deployer integration
+- Configuration validation
+- Template support
+- Variable substitution
+
+## Configuration Standards
+
+### YAML Configuration
+- Schema validation
+- Environment variables
+- Template support
+- Variable interpolation
+- Secure defaults
+- Validation rules
+
+### CLI Interface
+- Command structure
+- Option handling
+- Error reporting
+- Progress indication
+- Help documentation
+- Shell completion
+
+## Quality Gates
+
+### Code Quality
+- SonarCloud analysis
+- Coverage thresholds
+- Complexity limits
+- Duplication checks
+- Security rating
+- Maintainability rating
+
+### Release Quality
+- All tests passing
+- Coverage requirements met
+- No security issues
+- Documentation updated
+- Changelog updated
+- Version bumped
+
+## Monitoring and Logging
+
+### Application Logging
+- Structured logging
+- Log levels
+- Error tracking
+- Performance metrics
+- Audit logging
+- Debug information
+
+### Operational Monitoring
+- Health checks
+- Performance metrics
+- Error tracking
+- Usage statistics
+- API metrics
+- Resource usage
+
+## Dependencies
+
+### Production Dependencies
+- datadog>=0.44.0
+- pyyaml>=6.0
+- click>=8.0
+- requests>=2.26.0
+- jsonschema>=4.0.0
+- typing-extensions>=4.0.0
+
+### Development Dependencies
+- pytest>=7.0.0
+- black>=22.0.0
+- isort>=5.0.0
+- flake8>=4.0.0
+- mypy>=0.950
+- pylint>=2.17.0
+- bandit>=1.7.0
+- pre-commit>=2.17.0
+
+## File Patterns
+
+### Python Files
+```python
+"""Module docstring with purpose and usage."""
+
+from __future__ import annotations
+
+import logging
+from typing import Optional, Dict, List
+
+logger = logging.getLogger(__name__)
+
+class ClassName:
+    """Class docstring with description and usage."""
+
+    def method_name(self, param: str) -> bool:
+        """Method docstring with parameters and return value."""
+        try:
+            result = self._process(param)
+            return result
+        except Exception as e:
+            logger.error("Error in method_name: %s", str(e))
+            raise
+```
+
+### Configuration Files
+```yaml
+# Configuration file structure
+version: "1.0"
+healthchecks:
+  - name: "check-name"
+    type: "check-type"
+    enabled: true
+    configuration:
+      key: "value"
+    monitors:
+      enabled: true
+      thresholds:
+        warning: value
+        critical: value
+```
+
+## Globs
+- "**/*.py"              # Python source files
+- "**/*.yaml"           # YAML configuration files
+- "**/*.md"             # Documentation files
+- "requirements*.txt"   # Dependency files
+- ".github/**/*.yml"    # GitHub Actions workflows
+- "tests/**/*.py"       # Test files
+- "docs/**/*"           # Documentation files
