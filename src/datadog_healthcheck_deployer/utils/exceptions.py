@@ -1,5 +1,6 @@
 """Custom exceptions for the DataDog HealthCheck Deployer."""
 
+
 class DeployerError(Exception):
     """Base exception for all deployer errors."""
 
@@ -12,15 +13,18 @@ class DeployerError(Exception):
         self.message = message
         super().__init__(self.message)
 
+
 class ConfigError(DeployerError):
     """Exception raised for configuration errors."""
 
     pass
 
+
 class ValidationError(DeployerError):
     """Exception raised for validation errors."""
 
     pass
+
 
 class APIError(DeployerError):
     """Exception raised for DataDog API errors."""
@@ -35,10 +39,12 @@ class APIError(DeployerError):
         self.status_code = status_code
         super().__init__(message)
 
+
 class AuthenticationError(APIError):
     """Exception raised for authentication errors."""
 
     pass
+
 
 class RateLimitError(APIError):
     """Exception raised for rate limit errors."""
@@ -53,6 +59,7 @@ class RateLimitError(APIError):
         self.reset_time = reset_time
         super().__init__(message)
 
+
 class CheckError(DeployerError):
     """Exception raised for health check errors."""
 
@@ -65,6 +72,7 @@ class CheckError(DeployerError):
         """
         self.check_name = check_name
         super().__init__(f"Check {check_name}: {message}")
+
 
 class MonitorError(DeployerError):
     """Exception raised for monitor errors."""
@@ -79,6 +87,7 @@ class MonitorError(DeployerError):
         self.monitor_name = monitor_name
         super().__init__(f"Monitor {monitor_name}: {message}")
 
+
 class DashboardError(DeployerError):
     """Exception raised for dashboard errors."""
 
@@ -91,6 +100,7 @@ class DashboardError(DeployerError):
         """
         self.dashboard_name = dashboard_name
         super().__init__(f"Dashboard {dashboard_name}: {message}")
+
 
 class TemplateError(ConfigError):
     """Exception raised for template errors."""
@@ -105,6 +115,7 @@ class TemplateError(ConfigError):
         self.template_name = template_name
         super().__init__(f"Template {template_name}: {message}")
 
+
 class VariableError(ConfigError):
     """Exception raised for variable errors."""
 
@@ -117,6 +128,7 @@ class VariableError(ConfigError):
         """
         self.variable_name = variable_name
         super().__init__(f"Variable {variable_name}: {message}")
+
 
 class LocationError(DeployerError):
     """Exception raised for location errors."""
@@ -131,6 +143,7 @@ class LocationError(DeployerError):
         self.location = location
         super().__init__(f"Location {location}: {message}")
 
+
 class TimeoutError(DeployerError):
     """Exception raised for timeout errors."""
 
@@ -143,6 +156,7 @@ class TimeoutError(DeployerError):
         """
         self.timeout = timeout
         super().__init__(f"Timeout ({timeout}s): {message}")
+
 
 class RetryError(DeployerError):
     """Exception raised for retry errors."""
@@ -157,12 +171,14 @@ class RetryError(DeployerError):
         self.attempts = attempts
         super().__init__(f"Retry failed after {attempts} attempts: {message}")
 
+
 class ValidationWarning(Warning):
     """Warning raised for validation issues."""
 
     pass
 
+
 class DeprecationWarning(Warning):
     """Warning raised for deprecated features."""
 
-    pass 
+    pass

@@ -1,20 +1,21 @@
 """Monitor management for the DataDog HealthCheck Deployer."""
 
-from typing import Dict, Any, List, Optional, Type
 import logging
+from typing import Any, Dict, List
 
-from .monitor import Monitor
 from ..checks.base import BaseCheck
+from ..utils.constants import (
+    MONITOR_TYPE_METRIC,
+    MONITOR_TYPE_SERVICE,
+    TAG_CHECK_TYPE,
+    TAG_MONITOR_TYPE,
+)
 from ..utils.exceptions import MonitorError
 from ..utils.logging import LoggerMixin
-from ..utils.constants import (
-    MONITOR_TYPE_SERVICE,
-    MONITOR_TYPE_METRIC,
-    TAG_CHECK_TYPE,
-    TAG_MONITOR_TYPE
-)
+from .monitor import Monitor
 
 logger = logging.getLogger(__name__)
+
 
 class MonitorManager(LoggerMixin):
     """Class for managing monitor integration with health checks."""
@@ -55,11 +56,7 @@ class MonitorManager(LoggerMixin):
         except Exception as e:
             raise MonitorError(f"Failed to configure monitors: {str(e)}", check.name)
 
-    def _configure_availability_monitor(
-        self,
-        check: BaseCheck,
-        config: Dict[str, Any]
-    ) -> None:
+    def _configure_availability_monitor(self, check: BaseCheck, config: Dict[str, Any]) -> None:
         """Configure availability monitor.
 
         Args:
@@ -85,18 +82,14 @@ class MonitorManager(LoggerMixin):
                 },
                 "notify_audit": True,
                 "include_tags": True,
-            }
+            },
         }
 
         monitor = Monitor(monitor_config)
         self._deploy_monitor(monitor)
         self.monitors[monitor_name] = monitor
 
-    def _configure_latency_monitor(
-        self,
-        check: BaseCheck,
-        config: Dict[str, Any]
-    ) -> None:
+    def _configure_latency_monitor(self, check: BaseCheck, config: Dict[str, Any]) -> None:
         """Configure latency monitor.
 
         Args:
@@ -122,18 +115,14 @@ class MonitorManager(LoggerMixin):
                 },
                 "notify_audit": True,
                 "include_tags": True,
-            }
+            },
         }
 
         monitor = Monitor(monitor_config)
         self._deploy_monitor(monitor)
         self.monitors[monitor_name] = monitor
 
-    def _configure_ssl_monitor(
-        self,
-        check: BaseCheck,
-        config: Dict[str, Any]
-    ) -> None:
+    def _configure_ssl_monitor(self, check: BaseCheck, config: Dict[str, Any]) -> None:
         """Configure SSL certificate monitor.
 
         Args:
@@ -159,18 +148,14 @@ class MonitorManager(LoggerMixin):
                 },
                 "notify_audit": True,
                 "include_tags": True,
-            }
+            },
         }
 
         monitor = Monitor(monitor_config)
         self._deploy_monitor(monitor)
         self.monitors[monitor_name] = monitor
 
-    def _configure_custom_monitor(
-        self,
-        check: BaseCheck,
-        config: Dict[str, Any]
-    ) -> None:
+    def _configure_custom_monitor(self, check: BaseCheck, config: Dict[str, Any]) -> None:
         """Configure custom monitor.
 
         Args:
@@ -277,11 +262,13 @@ Status: {{{{check.status}}}}
             List of tags
         """
         tags = check.tags.copy()
-        tags.extend([
-            f"{TAG_CHECK_TYPE}:{check.type}",
-            f"{TAG_MONITOR_TYPE}:{monitor_type}",
-            "managed-by:dd-healthcheck",
-        ])
+        tags.extend(
+            [
+                f"{TAG_CHECK_TYPE}:{check.type}",
+                f"{TAG_MONITOR_TYPE}:{monitor_type}",
+                "managed-by:dd-healthcheck",
+            ]
+        )
         return tags
 
     def _deploy_monitor(self, monitor: Monitor) -> None:
@@ -295,7 +282,7 @@ Status: {{{{check.status}}}}
         """
         try:
             # Check if monitor exists
-            existing = Monitor.search(f"name:\"{monitor.name}\"")
+            existing = Monitor.search(f'name:"{monitor.name}"')
             if existing:
                 monitor.id = existing[0].id
                 monitor.update()
@@ -314,7 +301,7 @@ Status: {{{{check.status}}}}
             MonitorError: If monitor deletion fails
         """
         try:
-            monitors = Monitor.search(f"name:\"{check_name}\"")
+            monitors = Monitor.search(f'name:"{check_name}"')
             for monitor in monitors:
                 monitor.delete()
                 if monitor.name in self.monitors:
@@ -335,11 +322,11 @@ Status: {{{{check.status}}}}
             MonitorError: If status retrieval fails
         """
         try:
-            monitors = Monitor.search(f"name:\"{check_name}\"")
+            monitors = Monitor.search(f'name:"{check_name}"')
             return [monitor.get_status() for monitor in monitors]
         except Exception as e:
             raise MonitorError(f"Failed to get monitor status: {str(e)}", check_name)
 
     def __repr__(self) -> str:
         """Return string representation of the monitor manager."""
-        return f"MonitorManager(monitors={len(self.monitors)})" 
+        return f"MonitorManager(monitors={len(self.monitors)})"

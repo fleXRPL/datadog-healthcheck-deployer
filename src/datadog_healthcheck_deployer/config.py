@@ -1,11 +1,12 @@
 """Configuration handling for the DataDog HealthCheck Deployer."""
 
-from typing import Dict, Any, Optional
+import json
 import logging
 import os
+from typing import Any, Dict
+
 import yaml
-import json
-from jsonschema import validate, ValidationError
+from jsonschema import ValidationError, validate
 
 from .utils.exceptions import ConfigError
 
@@ -62,6 +63,7 @@ CONFIG_SCHEMA = {
     },
 }
 
+
 def load_config(config_file: str) -> Dict[str, Any]:
     """Load configuration from file.
 
@@ -89,7 +91,8 @@ def load_config(config_file: str) -> Dict[str, Any]:
     except Exception as e:
         raise ConfigError(f"Failed to load configuration: {str(e)}")
 
-def validate_config(config: Dict[str, Any], strict: bool = False) -> None:
+
+def validate_configuration(config: Dict[str, Any], strict: bool = False) -> None:
     """Validate configuration against schema.
 
     Args:
@@ -109,6 +112,7 @@ def validate_config(config: Dict[str, Any], strict: bool = False) -> None:
         raise ConfigError(f"Configuration validation failed: {str(e)}")
     except Exception as e:
         raise ConfigError(f"Configuration validation failed: {str(e)}")
+
 
 def _process_config(config: Dict[str, Any]) -> Dict[str, Any]:
     """Process configuration with variable substitution and template inheritance.
@@ -130,6 +134,7 @@ def _process_config(config: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         raise ConfigError(f"Failed to process configuration: {str(e)}")
 
+
 def _substitute_variables(config: Dict[str, Any]) -> Dict[str, Any]:
     """Substitute variables in configuration.
 
@@ -143,11 +148,9 @@ def _substitute_variables(config: Dict[str, Any]) -> Dict[str, Any]:
         ConfigError: If variable substitution fails
     """
     variables = config.get("variables", {})
-    variables.update({
-        key: value
-        for key, value in os.environ.items()
-        if key.startswith(("DD_", "DATADOG_"))
-    })
+    variables.update(
+        {key: value for key, value in os.environ.items() if key.startswith(("DD_", "DATADOG_"))}
+    )
 
     def _substitute(value: Any) -> Any:
         if isinstance(value, str):
@@ -163,6 +166,7 @@ def _substitute_variables(config: Dict[str, Any]) -> Dict[str, Any]:
         return value
 
     return _substitute(config)
+
 
 def _apply_templates(config: Dict[str, Any]) -> Dict[str, Any]:
     """Apply templates to health check configurations.
@@ -194,6 +198,7 @@ def _apply_templates(config: Dict[str, Any]) -> Dict[str, Any]:
     config["healthchecks"] = processed_checks
     return config
 
+
 def _apply_defaults(config: Dict[str, Any]) -> Dict[str, Any]:
     """Apply default values to health check configurations.
 
@@ -211,6 +216,7 @@ def _apply_defaults(config: Dict[str, Any]) -> Dict[str, Any]:
 
     return config
 
+
 def _validate_check_names(config: Dict[str, Any]) -> None:
     """Validate health check names are unique.
 
@@ -226,6 +232,7 @@ def _validate_check_names(config: Dict[str, Any]) -> None:
         if name in names:
             raise ConfigError(f"Duplicate check name: {name}")
         names.add(name)
+
 
 def _validate_templates(config: Dict[str, Any]) -> None:
     """Validate template configurations.
@@ -245,6 +252,7 @@ def _validate_templates(config: Dict[str, Any]) -> None:
             if parent == name:
                 raise ConfigError(f"Template {name} cannot inherit from itself")
 
+
 def _validate_strict(config: Dict[str, Any]) -> None:
     """Perform strict validation of configuration.
 
@@ -261,6 +269,7 @@ def _validate_strict(config: Dict[str, Any]) -> None:
             raise ConfigError(f"No tags specified for check {check['name']}")
         if "monitors" in check and not check["monitors"].get("enabled", True):
             logger.warning("Check %s has monitors disabled", check["name"])
+
 
 def dump_config(config: Dict[str, Any], output_format: str = "yaml") -> str:
     """Dump configuration to string.
@@ -282,6 +291,7 @@ def dump_config(config: Dict[str, Any], output_format: str = "yaml") -> str:
     except Exception as e:
         raise ConfigError(f"Failed to dump configuration: {str(e)}")
 
+
 def merge_configs(*configs: Dict[str, Any]) -> Dict[str, Any]:
     """Merge multiple configurations.
 
@@ -302,6 +312,7 @@ def merge_configs(*configs: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as e:
         raise ConfigError(f"Failed to merge configurations: {str(e)}")
 
+
 def _deep_merge(target: Dict[str, Any], source: Dict[str, Any]) -> None:
     """Deep merge two dictionaries.
 
@@ -315,4 +326,4 @@ def _deep_merge(target: Dict[str, Any], source: Dict[str, Any]) -> None:
         elif key in target and isinstance(target[key], list) and isinstance(value, list):
             target[key].extend(value)
         else:
-            target[key] = value 
+            target[key] = value

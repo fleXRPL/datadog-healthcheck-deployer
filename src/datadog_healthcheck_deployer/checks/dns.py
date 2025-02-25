@@ -1,16 +1,18 @@
 """DNS health check implementation."""
 
-from typing import Dict, Any, List, Optional, Union
 import logging
-import dns.resolver
-import dns.exception
+from typing import Any, Dict, List, Optional
 
-from .base import BaseCheck
+import dns.exception
+import dns.resolver
+
+from ..utils.constants import TIMEOUT_DNS
 from ..utils.exceptions import DeployerError
 from ..utils.validation import validate_dns_record
-from ..utils.constants import TIMEOUT_DNS
+from .base import BaseCheck
 
 logger = logging.getLogger(__name__)
+
 
 class DNSCheck(BaseCheck):
     """DNS health check implementation."""
@@ -41,9 +43,7 @@ class DNSCheck(BaseCheck):
             raise DeployerError(f"Hostname is required for DNS check {self.name}")
 
         if self.record_type not in ["A", "AAAA", "CNAME", "MX", "TXT", "NS", "PTR", "SRV"]:
-            raise DeployerError(
-                f"Invalid DNS record type {self.record_type} for check {self.name}"
-            )
+            raise DeployerError(f"Invalid DNS record type {self.record_type} for check {self.name}")
 
         if not isinstance(self.nameservers, list) or not self.nameservers:
             raise DeployerError(f"Invalid nameservers configuration for check {self.name}")
@@ -60,7 +60,7 @@ class DNSCheck(BaseCheck):
                 "DNS record validation failed for %s (type %s): %s",
                 self.hostname,
                 self.record_type,
-                str(e)
+                str(e),
             )
 
     def _build_api_payload(self) -> Dict[str, Any]:
@@ -70,16 +70,18 @@ class DNSCheck(BaseCheck):
             Dict containing the API payload
         """
         payload = super()._build_api_payload()
-        payload.update({
-            "config": {
-                "hostname": self.hostname,
-                "record_type": self.record_type,
-                "nameservers": self.nameservers,
-                "timeout": self.resolution_timeout,
-                "check_all_servers": self.check_all_servers,
-                "assertions": self._build_assertions(),
+        payload.update(
+            {
+                "config": {
+                    "hostname": self.hostname,
+                    "record_type": self.record_type,
+                    "nameservers": self.nameservers,
+                    "timeout": self.resolution_timeout,
+                    "check_all_servers": self.check_all_servers,
+                    "assertions": self._build_assertions(),
+                }
             }
-        })
+        )
         return payload
 
     def _build_assertions(self) -> List[Dict[str, Any]]:
@@ -97,15 +99,17 @@ class DNSCheck(BaseCheck):
                 "type": "resolutionTime",
                 "operator": "lessThan",
                 "target": self.resolution_timeout * 1000,  # Convert to milliseconds
-            }
+            },
         ]
 
         if self.expected_values:
-            assertions.append({
-                "type": "recordValue",
-                "operator": "contains",
-                "target": self.expected_values,
-            })
+            assertions.append(
+                {
+                    "type": "recordValue",
+                    "operator": "contains",
+                    "target": self.expected_values,
+                }
+            )
 
         return assertions
 
@@ -185,10 +189,12 @@ class DNSCheck(BaseCheck):
             elif self.record_type == "CNAME":
                 formatted.append({"target": str(answer.target)})
             elif self.record_type == "MX":
-                formatted.append({
-                    "preference": answer.preference,
-                    "exchange": str(answer.exchange),
-                })
+                formatted.append(
+                    {
+                        "preference": answer.preference,
+                        "exchange": str(answer.exchange),
+                    }
+                )
             elif self.record_type == "TXT":
                 formatted.append({"text": str(answer)})
             elif self.record_type == "NS":
@@ -196,12 +202,14 @@ class DNSCheck(BaseCheck):
             elif self.record_type == "PTR":
                 formatted.append({"target": str(answer)})
             elif self.record_type == "SRV":
-                formatted.append({
-                    "priority": answer.priority,
-                    "weight": answer.weight,
-                    "port": answer.port,
-                    "target": str(answer.target),
-                })
+                formatted.append(
+                    {
+                        "priority": answer.priority,
+                        "weight": answer.weight,
+                        "port": answer.port,
+                        "target": str(answer.target),
+                    }
+                )
             else:
                 formatted.append({"value": str(answer)})
 
@@ -239,11 +247,13 @@ class DNSCheck(BaseCheck):
                 results["servers"].append(server_result)
             else:
                 results["valid"] = False
-                results["errors"].append({
-                    "nameserver": nameserver,
-                    "error": resolution["error"],
-                    "error_type": resolution["error_type"],
-                })
+                results["errors"].append(
+                    {
+                        "nameserver": nameserver,
+                        "error": resolution["error"],
+                        "error_type": resolution["error_type"],
+                    }
+                )
 
         return results
 
@@ -302,4 +312,4 @@ class DNSCheck(BaseCheck):
 
     def __repr__(self) -> str:
         """Return string representation of the DNS check."""
-        return f"DNSCheck(name={self.name}, hostname={self.hostname}, type={self.record_type})" 
+        return f"DNSCheck(name={self.name}, hostname={self.hostname}, type={self.record_type})"

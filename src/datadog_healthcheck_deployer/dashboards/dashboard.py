@@ -1,14 +1,16 @@
 """Dashboard class for managing individual DataDog dashboards."""
 
-from typing import Dict, Any, List, Optional
 import logging
+from typing import Any, Dict, List
 
 from datadog import api
+
 from ..utils.exceptions import DashboardError
-from ..utils.validation import validate_dashboard_config
 from ..utils.logging import LoggerMixin
+from ..utils.validation import validate_dashboard_config
 
 logger = logging.getLogger(__name__)
+
 
 class Dashboard(LoggerMixin):
     """Class for managing DataDog dashboards."""
@@ -133,4 +135,4 @@ class Dashboard(LoggerMixin):
 
     def __repr__(self) -> str:
         """Return string representation of the dashboard."""
-        return f"Dashboard(title={self.title}, id={self.id})" 
+        return f"Dashboard(title={self.title}, id={self.id})"

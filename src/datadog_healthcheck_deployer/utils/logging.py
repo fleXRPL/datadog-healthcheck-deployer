@@ -11,6 +11,7 @@ DEFAULT_LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 # Default date format
 DEFAULT_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+
 def setup_logging(
     level: Union[str, int] = logging.INFO,
     format: str = DEFAULT_LOG_FORMAT,
@@ -58,6 +59,7 @@ def setup_logging(
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
 
+
 def get_logger(name: str) -> logging.Logger:
     """Get a logger instance.
 
@@ -68,6 +70,7 @@ def get_logger(name: str) -> logging.Logger:
         Logger instance
     """
     return logging.getLogger(f"datadog_healthcheck_deployer.{name}")
+
 
 class LoggerMixin:
     """Mixin class to add logging capabilities to a class."""
@@ -83,6 +86,7 @@ class LoggerMixin:
             self._logger = get_logger(self.__class__.__name__.lower())
         return self._logger
 
+
 def log_call(logger: logging.Logger, level: int = logging.DEBUG):
     """Decorator to log function calls.
 
@@ -93,14 +97,18 @@ def log_call(logger: logging.Logger, level: int = logging.DEBUG):
     Returns:
         Decorator function
     """
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             logger.log(level, f"Calling {func.__name__}(args={args}, kwargs={kwargs})")
             result = func(*args, **kwargs)
             logger.log(level, f"{func.__name__} returned {result}")
             return result
+
         return wrapper
+
     return decorator
+
 
 def log_exception(logger: logging.Logger, level: int = logging.ERROR):
     """Decorator to log exceptions.
@@ -112,6 +120,7 @@ def log_exception(logger: logging.Logger, level: int = logging.ERROR):
     Returns:
         Decorator function
     """
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             try:
@@ -119,5 +128,7 @@ def log_exception(logger: logging.Logger, level: int = logging.ERROR):
             except Exception as e:
                 logger.log(level, f"Exception in {func.__name__}: {str(e)}", exc_info=True)
                 raise
+
         return wrapper
-    return decorator 
+
+    return decorator

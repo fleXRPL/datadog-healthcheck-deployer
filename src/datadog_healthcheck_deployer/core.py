@@ -1,21 +1,23 @@
 """Core functionality for the DataDog HealthCheck Deployer."""
 
-from typing import Dict, List, Optional, Any
 import logging
 import os
+from typing import Any, Dict, List, Optional
 
-from datadog import initialize, api
-from .config import load_config, validate_config
+from datadog import api, initialize
+
 from .checks.base import BaseCheck
+from .checks.dns import DNSCheck
 from .checks.http import HTTPCheck
 from .checks.ssl import SSLCheck
-from .checks.dns import DNSCheck
 from .checks.tcp import TCPCheck
-from .monitors import MonitorManager
+from .config import load_config, validate_config
 from .dashboards import DashboardManager
+from .monitors import MonitorManager
 from .utils.exceptions import DeployerError
 
 logger = logging.getLogger(__name__)
+
 
 class HealthCheckDeployer:
     """Main class for deploying and managing health checks."""
@@ -232,4 +234,4 @@ class HealthCheckDeployer:
         except Exception as e:
             logger.error("Failed to delete check %s: %s", check_name, str(e))
             if not force:
-                raise 
+                raise

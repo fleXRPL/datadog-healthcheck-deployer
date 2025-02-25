@@ -1,17 +1,18 @@
 """Command-line interface for the DataDog HealthCheck Deployer."""
 
-from typing import Optional
 import logging
 import sys
+from typing import Optional
 
 import click
 
 from . import __version__
-from .core import HealthCheckDeployer
 from .config import load_config, validate_config
+from .core import HealthCheckDeployer
 from .utils.logging import setup_logging
 
 logger = logging.getLogger(__name__)
+
 
 @click.group()
 @click.version_option(version=__version__)
@@ -63,6 +64,7 @@ def cli(
             logger.error("Failed to load configuration: %s", str(e))
             sys.exit(1)
 
+
 @cli.command()
 @click.argument("config_file", type=click.Path(exists=True))
 @click.option("--check", help="Deploy specific check")
@@ -83,6 +85,7 @@ def deploy(
     except Exception as e:
         logger.error("Deployment failed: %s", str(e))
         sys.exit(1)
+
 
 @cli.command()
 @click.argument("config_file", type=click.Path(exists=True))
@@ -105,6 +108,7 @@ def validate(
         logger.error("Validation failed: %s", str(e))
         sys.exit(1)
 
+
 @cli.command()
 @click.argument("check_name", required=False)
 @click.option("--verbose", "-v", is_flag=True, help="Show detailed status")
@@ -124,6 +128,7 @@ def status(
         logger.error("Status check failed: %s", str(e))
         sys.exit(1)
 
+
 @cli.command()
 @click.option("--tag", help="Filter by tag")
 @click.option("--type", "check_type", help="Filter by type")
@@ -136,6 +141,7 @@ def list(ctx: click.Context, tag: Optional[str], check_type: Optional[str]) -> N
     except Exception as e:
         logger.error("List operation failed: %s", str(e))
         sys.exit(1)
+
 
 @cli.command()
 @click.argument("check_name")
@@ -151,10 +157,11 @@ def delete(ctx: click.Context, check_name: str, force: bool, keep_monitors: bool
         logger.error("Deletion failed: %s", str(e))
         sys.exit(1)
 
+
 def main() -> None:
     """Main entry point for the CLI."""
     try:
         cli(obj={})
     except Exception as e:
         logger.error("Unexpected error: %s", str(e))
-        sys.exit(1) 
+        sys.exit(1)

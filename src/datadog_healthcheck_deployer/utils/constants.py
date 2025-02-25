@@ -39,7 +39,7 @@ VALID_CHECK_TYPES = [
     CHECK_TYPE_SSL,
     CHECK_TYPE_TCP,
     CHECK_TYPE_DNS,
-    CHECK_TYPE_ICMP
+    CHECK_TYPE_ICMP,
 ]
 
 # HTTP methods
@@ -58,7 +58,7 @@ VALID_HTTP_METHODS = [
     HTTP_METHOD_DELETE,
     HTTP_METHOD_HEAD,
     HTTP_METHOD_OPTIONS,
-    HTTP_METHOD_PATCH
+    HTTP_METHOD_PATCH,
 ]
 
 # Monitor types
@@ -77,7 +77,7 @@ VALID_MONITOR_TYPES = [
     MONITOR_TYPE_PROCESS,
     MONITOR_TYPE_LOG,
     MONITOR_TYPE_COMPOSITE,
-    MONITOR_TYPE_QUERY
+    MONITOR_TYPE_QUERY,
 ]
 
 # Monitor states
@@ -94,7 +94,7 @@ VALID_MONITOR_STATES = [
     MONITOR_ALERT,
     MONITOR_NO_DATA,
     MONITOR_SKIPPED,
-    MONITOR_UNKNOWN
+    MONITOR_UNKNOWN,
 ]
 
 # Notification types
@@ -115,7 +115,7 @@ VALID_NOTIFY_TYPES = [
     NOTIFY_TYPE_OPSGENIE,
     NOTIFY_TYPE_VICTOROPS,
     NOTIFY_TYPE_JIRA,
-    NOTIFY_TYPE_SERVICENOW
+    NOTIFY_TYPE_SERVICENOW,
 ]
 
 # Locations
@@ -135,7 +135,7 @@ LOCATIONS: Dict[str, List[str]] = {
         "ap-southeast-1",
         "ap-southeast-2",
         "ap-south-1",
-        "sa-east-1"
+        "sa-east-1",
     ],
     "azure": [
         "eastus",
@@ -156,7 +156,7 @@ LOCATIONS: Dict[str, List[str]] = {
         "australiasoutheast",
         "centralindia",
         "southindia",
-        "westindia"
+        "westindia",
     ],
     "gcp": [
         "us-east1",
@@ -175,8 +175,8 @@ LOCATIONS: Dict[str, List[str]] = {
         "asia-south1",
         "asia-southeast1",
         "australia-southeast1",
-        "southamerica-east1"
-    ]
+        "southamerica-east1",
+    ],
 }
 
 # Success criteria
@@ -197,7 +197,7 @@ VALID_CRITERIA = [
     CRITERIA_CONTENT_MATCH,
     CRITERIA_CONTENT_LENGTH,
     CRITERIA_DNS_RECORD,
-    CRITERIA_TCP_CONNECT
+    CRITERIA_TCP_CONNECT,
 ]
 
 # Tags
@@ -208,10 +208,7 @@ TAG_LOCATION = "location"
 TAG_CHECK_TYPE = "check_type"
 TAG_MONITOR_TYPE = "monitor_type"
 
-REQUIRED_TAGS = [
-    TAG_ENV,
-    TAG_SERVICE
-]
+REQUIRED_TAGS = [TAG_ENV, TAG_SERVICE]
 
 # Timeouts (seconds)
 TIMEOUT_HTTP = 30
@@ -240,4 +237,4 @@ CACHE_TTL = 300  # seconds
 CACHE_DIR = os.path.expanduser("~/.datadog-healthcheck-deployer/cache")
 
 # Version
-VERSION = "1.0.0" 
+VERSION = "1.0.0"

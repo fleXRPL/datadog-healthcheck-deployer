@@ -1,13 +1,15 @@
 """Base class for all health check types."""
 
-from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
 import logging
+from abc import ABC, abstractmethod
+from typing import Any, Dict, Optional
 
 from datadog import api
+
 from ..utils.exceptions import DeployerError
 
 logger = logging.getLogger(__name__)
+
 
 class BaseCheck(ABC):
     """Abstract base class for health checks."""
@@ -161,7 +163,9 @@ class BaseCheck(ABC):
         except Exception as e:
             raise DeployerError(f"Failed to get status for check {self.name}: {str(e)}")
 
-    def get_results(self, from_ts: Optional[int] = None, to_ts: Optional[int] = None) -> Dict[str, Any]:
+    def get_results(
+        self, from_ts: Optional[int] = None, to_ts: Optional[int] = None
+    ) -> Dict[str, Any]:
         """Get check results.
 
         Args:
@@ -210,4 +214,4 @@ class BaseCheck(ABC):
 
     def __repr__(self) -> str:
         """Return string representation of the check."""
-        return f"{self.__class__.__name__}(name={self.name}, type={self.type})" 
+        return f"{self.__class__.__name__}(name={self.name}, type={self.type})"

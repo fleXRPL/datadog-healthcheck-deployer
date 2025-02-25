@@ -1,22 +1,17 @@
-"""Monitor management for the DataDog HealthCheck Deployer."""
+"""Monitor class for managing individual DataDog monitors."""
 
-from typing import Dict, Any, List, Optional
 import logging
+from typing import Any, Dict, List, Optional
 
 from datadog import api
+
+from ..utils.constants import MONITOR_TYPE_SERVICE
 from ..utils.exceptions import MonitorError
-from ..utils.validation import validate_monitor_config
 from ..utils.logging import LoggerMixin
-from ..utils.constants import (
-    MONITOR_TYPE_SERVICE,
-    MONITOR_TYPE_METRIC,
-    MONITOR_OK,
-    MONITOR_WARN,
-    MONITOR_ALERT,
-    MONITOR_NO_DATA
-)
+from ..utils.validation import validate_monitor_config
 
 logger = logging.getLogger(__name__)
+
 
 class Monitor(LoggerMixin):
     """Class for managing DataDog monitors."""
@@ -286,4 +281,4 @@ class Monitor(LoggerMixin):
 
     def __repr__(self) -> str:
         """Return string representation of the monitor."""
-        return f"Monitor(name={self.name}, type={self.type}, id={self.id})" 
+        return f"Monitor(name={self.name}, type={self.type}, id={self.id})"

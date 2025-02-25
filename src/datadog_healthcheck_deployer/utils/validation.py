@@ -1,28 +1,30 @@
 """Validation utilities for the DataDog HealthCheck Deployer."""
 
+import logging
 import re
 import socket
 import ssl
-import dns.resolver
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Optional, Union
 from urllib.parse import urlparse
 
+import dns.resolver
+
 from .constants import (
-    VALID_CHECK_TYPES,
-    VALID_HTTP_METHODS,
-    VALID_MONITOR_TYPES,
-    VALID_MONITOR_STATES,
-    VALID_NOTIFY_TYPES,
-    VALID_CRITERIA,
+    INTERVAL_MAX,
+    INTERVAL_MIN,
     LOCATIONS,
     REQUIRED_TAGS,
-    INTERVAL_MIN,
-    INTERVAL_MAX
+    VALID_CHECK_TYPES,
+    VALID_CRITERIA,
+    VALID_HTTP_METHODS,
+    VALID_MONITOR_STATES,
+    VALID_MONITOR_TYPES,
+    VALID_NOTIFY_TYPES,
 )
 from .exceptions import ValidationError
-from .logging import get_logger
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
+
 
 def validate_check_type(check_type: str) -> None:
     """Validate health check type.
@@ -38,6 +40,7 @@ def validate_check_type(check_type: str) -> None:
             f"Invalid check type: {check_type}. Must be one of: {', '.join(VALID_CHECK_TYPES)}"
         )
 
+
 def validate_http_method(method: str) -> None:
     """Validate HTTP method.
 
@@ -51,6 +54,7 @@ def validate_http_method(method: str) -> None:
         raise ValidationError(
             f"Invalid HTTP method: {method}. Must be one of: {', '.join(VALID_HTTP_METHODS)}"
         )
+
 
 def validate_monitor_type(monitor_type: str) -> None:
     """Validate monitor type.
@@ -66,6 +70,7 @@ def validate_monitor_type(monitor_type: str) -> None:
             f"Invalid monitor type: {monitor_type}. Must be one of: {', '.join(VALID_MONITOR_TYPES)}"
         )
 
+
 def validate_monitor_state(state: str) -> None:
     """Validate monitor state.
 
@@ -79,6 +84,7 @@ def validate_monitor_state(state: str) -> None:
         raise ValidationError(
             f"Invalid monitor state: {state}. Must be one of: {', '.join(VALID_MONITOR_STATES)}"
         )
+
 
 def validate_notify_type(notify_type: str) -> None:
     """Validate notification type.
@@ -94,6 +100,7 @@ def validate_notify_type(notify_type: str) -> None:
             f"Invalid notification type: {notify_type}. Must be one of: {', '.join(VALID_NOTIFY_TYPES)}"
         )
 
+
 def validate_criteria(criteria: str) -> None:
     """Validate success criteria.
 
@@ -107,6 +114,7 @@ def validate_criteria(criteria: str) -> None:
         raise ValidationError(
             f"Invalid success criteria: {criteria}. Must be one of: {', '.join(VALID_CRITERIA)}"
         )
+
 
 def validate_location(location: str) -> None:
     """Validate location.
@@ -132,6 +140,7 @@ def validate_location(location: str) -> None:
             f"Invalid region {region} for provider {provider}. Must be one of: {', '.join(LOCATIONS[provider])}"
         )
 
+
 def validate_tags(tags: Dict[str, str]) -> None:
     """Validate tags.
 
@@ -154,6 +163,7 @@ def validate_tags(tags: Dict[str, str]) -> None:
         if not tag_pattern.match(value):
             raise ValidationError(f"Invalid tag value format: {value}")
 
+
 def validate_interval(interval: int) -> None:
     """Validate check interval.
 
@@ -166,7 +176,10 @@ def validate_interval(interval: int) -> None:
     if not isinstance(interval, int):
         raise ValidationError(f"Invalid interval type: {type(interval)}. Must be an integer")
     if interval < INTERVAL_MIN or interval > INTERVAL_MAX:
-        raise ValidationError(f"Invalid interval: {interval}. Must be between {INTERVAL_MIN} and {INTERVAL_MAX} seconds")
+        raise ValidationError(
+            f"Invalid interval: {interval}. Must be between {INTERVAL_MIN} and {INTERVAL_MAX} seconds"
+        )
+
 
 def validate_url(url: str) -> None:
     """Validate URL format and accessibility.
@@ -183,6 +196,7 @@ def validate_url(url: str) -> None:
             raise ValidationError(f"Invalid URL format: {url}")
     except Exception as e:
         raise ValidationError(f"Failed to parse URL {url}: {str(e)}")
+
 
 def validate_ssl_certificate(hostname: str, port: int = 443) -> None:
     """Validate SSL certificate.
@@ -204,6 +218,7 @@ def validate_ssl_certificate(hostname: str, port: int = 443) -> None:
     except Exception as e:
         raise ValidationError(f"Failed to validate SSL certificate for {hostname}:{port}: {str(e)}")
 
+
 def validate_dns_record(hostname: str, record_type: str = "A") -> None:
     """Validate DNS record.
 
@@ -220,7 +235,10 @@ def validate_dns_record(hostname: str, record_type: str = "A") -> None:
         resolver.lifetime = 5
         resolver.query(hostname, record_type)
     except Exception as e:
-        raise ValidationError(f"Failed to resolve DNS record for {hostname} (type {record_type}): {str(e)}")
+        raise ValidationError(
+            f"Failed to resolve DNS record for {hostname} (type {record_type}): {str(e)}"
+        )
+
 
 def validate_tcp_connection(host: str, port: int) -> None:
     """Validate TCP connection.
@@ -238,6 +256,7 @@ def validate_tcp_connection(host: str, port: int) -> None:
     except Exception as e:
         raise ValidationError(f"Failed to establish TCP connection to {host}:{port}: {str(e)}")
 
+
 def validate_content_match(pattern: str) -> None:
     """Validate content match pattern.
 
@@ -252,7 +271,10 @@ def validate_content_match(pattern: str) -> None:
     except Exception as e:
         raise ValidationError(f"Invalid regular expression pattern: {str(e)}")
 
-def validate_thresholds(warning: Optional[Union[int, float]], critical: Optional[Union[int, float]]) -> None:
+
+def validate_thresholds(
+    warning: Optional[Union[int, float]], critical: Optional[Union[int, float]]
+) -> None:
     """Validate warning and critical thresholds.
 
     Args:
@@ -266,7 +288,10 @@ def validate_thresholds(warning: Optional[Union[int, float]], critical: Optional
         if not isinstance(warning, (int, float)) or not isinstance(critical, (int, float)):
             raise ValidationError("Thresholds must be numeric values")
         if warning <= critical:
-            raise ValidationError(f"Warning threshold ({warning}) must be greater than critical threshold ({critical})")
+            raise ValidationError(
+                f"Warning threshold ({warning}) must be greater than critical threshold ({critical})"
+            )
+
 
 def validate_variables(variables: Dict[str, Any]) -> None:
     """Validate variables.
@@ -284,6 +309,7 @@ def validate_variables(variables: Dict[str, Any]) -> None:
             raise ValidationError(f"Invalid variable name format: {key}")
         if value is None:
             raise ValidationError(f"Variable value cannot be None: {key}")
+
 
 def validate_template(template: Dict[str, Any]) -> None:
     """Validate template.
@@ -304,6 +330,7 @@ def validate_template(template: Dict[str, Any]) -> None:
     if "variables" in template:
         validate_variables(template["variables"])
 
+
 def validate_notification_channel(channel: Dict[str, Any]) -> None:
     """Validate notification channel configuration.
 
@@ -316,7 +343,9 @@ def validate_notification_channel(channel: Dict[str, Any]) -> None:
     required_fields = ["type", "name"]
     missing_fields = [field for field in required_fields if field not in channel]
     if missing_fields:
-        raise ValidationError(f"Missing required notification channel fields: {', '.join(missing_fields)}")
+        raise ValidationError(
+            f"Missing required notification channel fields: {', '.join(missing_fields)}"
+        )
 
     validate_notify_type(channel["type"])
 
@@ -334,6 +363,7 @@ def validate_notification_channel(channel: Dict[str, Any]) -> None:
         for address in channel["addresses"]:
             if not email_pattern.match(address):
                 raise ValidationError(f"Invalid email address: {address}")
+
 
 def validate_monitor_config(config: Dict[str, Any]) -> None:
     """Validate monitor configuration.
@@ -356,10 +386,9 @@ def validate_monitor_config(config: Dict[str, Any]) -> None:
 
     if "thresholds" in config:
         validate_thresholds(
-            config["thresholds"].get("warning"),
-            config["thresholds"].get("critical")
+            config["thresholds"].get("warning"), config["thresholds"].get("critical")
         )
 
     if "notify" in config:
         for channel in config["notify"]:
-            validate_notification_channel(channel) 
+            validate_notification_channel(channel)

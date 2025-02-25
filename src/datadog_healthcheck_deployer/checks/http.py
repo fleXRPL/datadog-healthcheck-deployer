@@ -1,12 +1,13 @@
 """HTTP health check implementation."""
 
-from typing import Dict, Any, List, Optional
 import logging
+from typing import Any, Dict, List, Optional
 
-from .base import BaseCheck
 from ..utils.exceptions import DeployerError
+from .base import BaseCheck
 
 logger = logging.getLogger(__name__)
+
 
 class HTTPCheck(BaseCheck):
     """HTTP health check implementation."""
@@ -57,16 +58,12 @@ class HTTPCheck(BaseCheck):
             if "status_code" in criterion:
                 code = criterion["status_code"]
                 if not isinstance(code, int) or code < 100 or code > 599:
-                    raise DeployerError(
-                        f"Invalid status code {code} for check {self.name}"
-                    )
+                    raise DeployerError(f"Invalid status code {code} for check {self.name}")
 
             if "response_time" in criterion:
                 time = criterion["response_time"]
                 if not isinstance(time, (int, float)) or time <= 0:
-                    raise DeployerError(
-                        f"Invalid response time {time} for check {self.name}"
-                    )
+                    raise DeployerError(f"Invalid response time {time} for check {self.name}")
 
             if "content" in criterion:
                 self._validate_content_criterion(criterion["content"])
@@ -107,20 +104,22 @@ class HTTPCheck(BaseCheck):
             Dict containing the API payload
         """
         payload = super()._build_api_payload()
-        payload.update({
-            "config": {
-                "request": {
-                    "url": self.url,
-                    "method": self.method,
-                    "headers": self.headers,
-                    "body": self.body,
-                    "timeout": self.timeout,
-                    "follow_redirects": self.follow_redirects,
-                    "verify_ssl": self.verify_ssl,
-                },
-                "assertions": self._build_assertions(),
+        payload.update(
+            {
+                "config": {
+                    "request": {
+                        "url": self.url,
+                        "method": self.method,
+                        "headers": self.headers,
+                        "body": self.body,
+                        "timeout": self.timeout,
+                        "follow_redirects": self.follow_redirects,
+                        "verify_ssl": self.verify_ssl,
+                    },
+                    "assertions": self._build_assertions(),
+                }
             }
-        })
+        )
         return payload
 
     def _build_assertions(self) -> List[Dict[str, Any]]:
@@ -133,18 +132,22 @@ class HTTPCheck(BaseCheck):
 
         for criterion in self.success_criteria:
             if "status_code" in criterion:
-                assertions.append({
-                    "type": "statusCode",
-                    "operator": "is",
-                    "target": criterion["status_code"],
-                })
+                assertions.append(
+                    {
+                        "type": "statusCode",
+                        "operator": "is",
+                        "target": criterion["status_code"],
+                    }
+                )
 
             if "response_time" in criterion:
-                assertions.append({
-                    "type": "responseTime",
-                    "operator": "lessThan",
-                    "target": criterion["response_time"],
-                })
+                assertions.append(
+                    {
+                        "type": "responseTime",
+                        "operator": "lessThan",
+                        "target": criterion["response_time"],
+                    }
+                )
 
             if "content" in criterion:
                 assertions.extend(self._build_content_assertions(criterion["content"]))
@@ -164,34 +167,42 @@ class HTTPCheck(BaseCheck):
         content_type = content.get("type", "").lower()
 
         if content_type == "json":
-            assertions.append({
-                "type": "header",
-                "property": "content-type",
-                "operator": "contains",
-                "target": "application/json",
-            })
+            assertions.append(
+                {
+                    "type": "header",
+                    "property": "content-type",
+                    "operator": "contains",
+                    "target": "application/json",
+                }
+            )
 
             if "path" in content:
-                assertions.append({
-                    "type": "body",
-                    "property": content["path"],
-                    "operator": content.get("operator", "equals"),
-                    "target": content.get("value"),
-                })
+                assertions.append(
+                    {
+                        "type": "body",
+                        "property": content["path"],
+                        "operator": content.get("operator", "equals"),
+                        "target": content.get("value"),
+                    }
+                )
 
         elif content_type == "text":
-            assertions.append({
-                "type": "body",
-                "operator": content.get("operator", "contains"),
-                "target": content.get("value"),
-            })
+            assertions.append(
+                {
+                    "type": "body",
+                    "operator": content.get("operator", "contains"),
+                    "target": content.get("value"),
+                }
+            )
 
         elif content_type == "regex":
-            assertions.append({
-                "type": "body",
-                "operator": "matches",
-                "target": content.get("value"),
-            })
+            assertions.append(
+                {
+                    "type": "body",
+                    "operator": "matches",
+                    "target": content.get("value"),
+                }
+            )
 
         return assertions
 
@@ -225,4 +236,4 @@ class HTTPCheck(BaseCheck):
 
     def __repr__(self) -> str:
         """Return string representation of the HTTP check."""
-        return f"HTTPCheck(name={self.name}, url={self.url}, method={self.method})" 
+        return f"HTTPCheck(name={self.name}, url={self.url}, method={self.method})"

@@ -1,13 +1,14 @@
 """Dashboard manager for the DataDog HealthCheck Deployer."""
 
-from typing import Dict, Any, List, Optional
 import logging
+from typing import Any, Dict, List, Optional
 
-from .dashboard import Dashboard
 from ..utils.exceptions import DashboardError
 from ..utils.logging import LoggerMixin
+from .dashboard import Dashboard
 
 logger = logging.getLogger(__name__)
+
 
 class DashboardManager(LoggerMixin):
     """Class for managing dashboard deployments."""
@@ -210,7 +211,10 @@ class DashboardManager(LoggerMixin):
                         {
                             "title": "Error Types",
                             "type": "toplist",
-                            "query": f"top(sum:healthcheck.errors{{check:{check.name}}} by {{error_type}}, 10, 'sum', 'desc')",
+                            "query": (
+                                f"top(sum:healthcheck.errors{{check:{check.name}}} "
+                                "by {error_type}, 10, 'sum', 'desc')"
+                            ),
                         },
                     ],
                 },
@@ -295,4 +299,4 @@ class DashboardManager(LoggerMixin):
 
     def __repr__(self) -> str:
         """Return string representation of the dashboard manager."""
-        return f"DashboardManager(dashboards={len(self.dashboards)})" 
+        return f"DashboardManager(dashboards={len(self.dashboards)})"

@@ -1,18 +1,20 @@
 """Utility functions and helpers for the DataDog HealthCheck Deployer."""
 
+import hashlib
+import json
 import os
 import re
-import json
-import yaml
-import hashlib
-import requests
-from typing import Any, Dict, List, Optional, Union
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urlparse
+
+import requests
+import yaml
 
 from .logging import get_logger
 
 logger = get_logger(__name__)
+
 
 def load_yaml(file_path: str) -> Dict[str, Any]:
     """Load YAML file.
@@ -37,6 +39,7 @@ def load_yaml(file_path: str) -> Dict[str, Any]:
         logger.error(f"Failed to parse YAML file {file_path}: {str(e)}")
         raise
 
+
 def dump_yaml(data: Dict[str, Any], file_path: str) -> None:
     """Dump data to YAML file.
 
@@ -59,6 +62,7 @@ def dump_yaml(data: Dict[str, Any], file_path: str) -> None:
         logger.error(f"Failed to dump YAML data to {file_path}: {str(e)}")
         raise
 
+
 def merge_dicts(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> Dict[str, Any]:
     """Deep merge two dictionaries.
 
@@ -76,6 +80,7 @@ def merge_dicts(dict1: Dict[str, Any], dict2: Dict[str, Any]) -> Dict[str, Any]:
         else:
             result[key] = value
     return result
+
 
 def substitute_variables(data: Any, variables: Dict[str, Any]) -> Any:
     """Substitute variables in data.
@@ -99,6 +104,7 @@ def substitute_variables(data: Any, variables: Dict[str, Any]) -> Any:
     else:
         return data
 
+
 def validate_url(url: str) -> bool:
     """Validate URL format.
 
@@ -114,6 +120,7 @@ def validate_url(url: str) -> bool:
     except Exception:
         return False
 
+
 def calculate_hash(data: Union[str, Dict[str, Any], List[Any]]) -> str:
     """Calculate SHA-256 hash of data.
 
@@ -127,8 +134,14 @@ def calculate_hash(data: Union[str, Dict[str, Any], List[Any]]) -> str:
         data = json.dumps(data, sort_keys=True)
     return hashlib.sha256(data.encode()).hexdigest()
 
-def retry_with_backoff(func: callable, max_attempts: int = 3, base_delay: float = 1.0,
-                      max_delay: float = 10.0, exponential: bool = True) -> Any:
+
+def retry_with_backoff(
+    func: callable,
+    max_attempts: int = 3,
+    base_delay: float = 1.0,
+    max_delay: float = 10.0,
+    exponential: bool = True,
+) -> Any:
     """Retry a function with exponential backoff.
 
     Args:
@@ -155,12 +168,14 @@ def retry_with_backoff(func: callable, max_attempts: int = 3, base_delay: float 
             if attempt == max_attempts - 1:
                 break
 
-            delay = min(base_delay * (2 ** attempt if exponential else 1), max_delay)
+            delay = min(base_delay * (2**attempt if exponential else 1), max_delay)
             logger.warning(f"Attempt {attempt + 1} failed, retrying in {delay:.1f}s: {str(e)}")
             import time
+
             time.sleep(delay)
 
     raise RetryError(str(last_exception), max_attempts)
+
 
 def format_timestamp(timestamp: Optional[Union[int, float, str, datetime]] = None) -> str:
     """Format timestamp as ISO 8601 string.
@@ -187,6 +202,7 @@ def format_timestamp(timestamp: Optional[Union[int, float, str, datetime]] = Non
 
     return dt.isoformat()
 
+
 def parse_duration(duration: str) -> int:
     """Parse duration string to seconds.
 
@@ -199,13 +215,7 @@ def parse_duration(duration: str) -> int:
     Raises:
         ValueError: If duration format is invalid
     """
-    units = {
-        "s": 1,
-        "m": 60,
-        "h": 3600,
-        "d": 86400,
-        "w": 604800
-    }
+    units = {"s": 1, "m": 60, "h": 3600, "d": 86400, "w": 604800}
 
     match = re.match(r"^(\d+)([smhdw])$", duration)
     if not match:
@@ -213,6 +223,7 @@ def parse_duration(duration: str) -> int:
 
     value, unit = match.groups()
     return int(value) * units[unit]
+
 
 def make_request(method: str, url: str, **kwargs) -> requests.Response:
     """Make HTTP request with retry and logging.
@@ -228,6 +239,7 @@ def make_request(method: str, url: str, **kwargs) -> requests.Response:
     Raises:
         requests.exceptions.RequestException: If request fails
     """
+
     def _make_request():
         response = requests.request(method, url, **kwargs)
         response.raise_for_status()
@@ -238,4 +250,4 @@ def make_request(method: str, url: str, **kwargs) -> requests.Response:
         return retry_with_backoff(_make_request)
     except Exception as e:
         logger.error(f"Request failed: {str(e)}")
-        raise 
+        raise
