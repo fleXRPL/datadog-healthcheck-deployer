@@ -21,33 +21,6 @@ from datadog_healthcheck_deployer.config import (
 from datadog_healthcheck_deployer.utils.exceptions import ConfigError
 
 
-def test_load_config(tmp_path):
-    """Test loading configuration from file."""
-    config_file = tmp_path / "config.yaml"
-    test_config = {
-        "version": "1.0",
-        "healthchecks": [
-            {
-                "name": "test-check",
-                "type": "http",
-                "url": "https://example.com",
-            }
-        ],
-    }
-    
-    with open(config_file, "w") as f:
-        yaml.dump(test_config, f)
-    
-    loaded_config = load_config(str(config_file))
-    assert loaded_config == test_config
-
-
-def test_load_config_empty():
-    """Test loading empty configuration file."""
-    with pytest.raises(ConfigError, match="Empty configuration file"):
-        load_config("nonexistent.yaml")
-
-
 def test_load_config_basic():
     """Test basic configuration loading."""
     yaml_content = """
@@ -61,6 +34,13 @@ def test_load_config_basic():
         config = load_config("dummy.yaml")
         assert config["version"] == "1.0"
         assert len(config["healthchecks"]) == 1
+
+
+def test_load_config_empty():
+    """Test loading empty configuration."""
+    with patch("builtins.open", mock_open(read_data="")):
+        with pytest.raises(ConfigError, match="Empty configuration"):
+            load_config("dummy.yaml")
 
 
 def test_load_config_invalid_yaml():
@@ -93,26 +73,15 @@ def test_load_config_with_content():
     assert len(result["healthchecks"]) == 1
 
 
-def test_validate_config():
+def test_validate_config_basic(mock_config):
     """Test basic configuration validation."""
-    config = {
-        "version": "1.0",
-        "healthchecks": [
-            {
-                "name": "test-check",
-                "type": "http",
-            }
-        ],
-    }
-    validate_config(config)  # Should not raise
+    validate_config(mock_config)  # Should not raise
 
 
 def test_validate_config_missing_version():
-    """Test validation with missing version."""
-    config = {
-        "healthchecks": [],
-    }
-    with pytest.raises(ConfigError):
+    """Test configuration validation without version."""
+    config = {"healthchecks": []}
+    with pytest.raises(ConfigError, match="Configuration validation failed"):
         validate_config(config)
 
 
@@ -505,18 +474,27 @@ def test_validate_strict():
 
 
 def test_dump_config():
-    """Test dumping configuration to string."""
+    """Test dumping configuration."""
     config = {
         "version": "1.0",
-        "healthchecks": [],
+        "healthchecks": [
+            {
+                "name": "test",
+                "type": "http",
+                "url": "https://test.com",
+            },
+        ],
     }
-    yaml_output = dump_config(config, "yaml")
-    assert "version" in yaml_output
-    assert "healthchecks" in yaml_output
 
-    json_output = dump_config(config, "json")
-    assert "version" in json_output
-    assert "healthchecks" in json_output
+    # Test YAML output
+    yaml_output = dump_config(config, output_format="yaml")
+    assert "version: '1.0'" in yaml_output
+    assert "name: test" in yaml_output
+
+    # Test JSON output
+    json_output = dump_config(config, output_format="json")
+    assert '"version": "1.0"' in json_output
+    assert '"name": "test"' in json_output
 
 
 def test_merge_configs():
