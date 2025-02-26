@@ -1,6 +1,6 @@
 """Test fixtures for the DataDog HealthCheck Deployer."""
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -39,30 +39,19 @@ MOCK_DATA = {
 
 @pytest.fixture
 def mock_datadog_api():
-    """Mock DataDog API with minimal responses."""
-    mock_api = MagicMock()
+    """Create mock Datadog API."""
+    with patch("datadog_healthcheck_deployer.checks.base.api") as mock_api:
+        mock_api.Synthetics = MagicMock()
+        mock_api.Synthetics.get_test.return_value = None
+        mock_api.Synthetics.create_test.return_value = {"public_id": "test-id"}
+        yield mock_api
 
-    # Basic success responses
-    mock_api.Monitor.create.return_value = {"id": "test-123"}
-    mock_api.Monitor.get.return_value = {"id": "test-123", "status": "OK"}
-    mock_api.Monitor.update.return_value = {"id": "test-123"}
-    mock_api.Monitor.delete.return_value = {"deleted": "test-123"}
 
-    mock_api.Dashboard.create.return_value = {"id": "dash-123"}
-    mock_api.Dashboard.get.return_value = {"id": "dash-123", "title": "Test Dashboard"}
-    mock_api.Dashboard.update.return_value = {"id": "dash-123"}
-    mock_api.Dashboard.delete.return_value = {"deleted": "dash-123"}
-
-    mock_api.Synthetics.create_test.return_value = {"public_id": "abc-123"}
-    mock_api.Synthetics.get_test.return_value = {
-        "public_id": "abc-123",
-        "status": "live",
-        "locations": ["aws:us-east-1"],
-    }
-    mock_api.Synthetics.update_test.return_value = {"public_id": "abc-123"}
-    mock_api.Synthetics.delete_test.return_value = {"deleted": "abc-123"}
-
-    return mock_api
+@pytest.fixture
+def mock_env():
+    """Mock environment variables."""
+    with patch.dict("os.environ", {"DD_API_KEY": "test-key", "DD_APP_KEY": "test-key"}):
+        yield
 
 
 @pytest.fixture
@@ -129,11 +118,11 @@ def mock_logger():
 
 @pytest.fixture
 def mock_check():
-    """Mock health check fixture."""
+    """Create a mock check."""
     check = MagicMock()
     check.name = "test-check"
     check.type = "http"
-    check.url = "https://test.com/health"
+    check.enabled = True
     check.locations = ["aws:us-east-1"]
     return check
 
@@ -168,3 +157,19 @@ def mock_validator():
     validator.get_defaults.return_value = {}
     validator.get_required_fields.return_value = []
     return validator
+
+
+@pytest.fixture
+def sample_config():
+    """Sample configuration for tests."""
+    return {
+        "version": "1.0",
+        "healthchecks": [
+            {
+                "name": "test-http",
+                "type": "http",
+                "url": "https://example.com/health",
+                "locations": ["aws:us-east-1"],
+            }
+        ],
+    }

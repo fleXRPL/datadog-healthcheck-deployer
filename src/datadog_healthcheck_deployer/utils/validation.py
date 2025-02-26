@@ -392,3 +392,14 @@ def validate_monitor_config(config: Dict[str, Any]) -> None:
     if "notify" in config:
         for channel in config["notify"]:
             validate_notification_channel(channel)
+
+
+def validate_dashboard_config(config):
+    """Basic dashboard config validation for MVP."""
+    if not isinstance(config, dict):
+        raise ValueError("Dashboard configuration must be a dictionary")
+
+    if "title" not in config:
+        raise ValueError("Dashboard title is required")
+
+    return True

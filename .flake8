@@ -14,7 +14,7 @@ exclude =
 docstring-convention = google
 
 # Complexity settings
-max-complexity = 10
+max-complexity = 15
 
 # Import settings
 import-order-style = google

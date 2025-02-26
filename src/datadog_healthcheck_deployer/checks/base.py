@@ -1,7 +1,7 @@
 """Base class for all health check types."""
 
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Any, Dict, Optional
 
 from datadog import api
@@ -12,97 +12,59 @@ logger = logging.getLogger(__name__)
 
 
 class BaseCheck(ABC):
-    """Abstract base class for health checks."""
+    """Base check class."""
 
     def __init__(self, config: Dict[str, Any]) -> None:
-        """Initialize base check with configuration.
-
-        Args:
-            config: Check configuration dictionary
-        """
-        self.config = config
+        """Initialize base check."""
         self.name = config.get("name")
         self.type = config.get("type")
-        self.enabled = config.get("enabled", True)
-        self.tags = config.get("tags", [])
         self.locations = config.get("locations", [])
+        self.enabled = config.get("enabled", True)
         self.frequency = config.get("frequency", 60)
         self.timeout = config.get("timeout", 10)
 
+    def validate(self) -> None:
+        """Validate check configuration."""
         if not self.name:
             raise DeployerError("Check name is required")
         if not self.type:
             raise DeployerError("Check type is required")
-
-    @abstractmethod
-    def validate(self) -> None:
-        """Validate check configuration.
-
-        Raises:
-            DeployerError: If configuration is invalid
-        """
         if not self.locations:
-            raise DeployerError(f"No locations specified for check {self.name}")
-
-        if self.frequency < 60:
-            logger.warning(
-                "Check frequency for %s is less than 60 seconds, which may impact performance",
-                self.name,
-            )
-
-    @abstractmethod
-    def _build_api_payload(self) -> Dict[str, Any]:
-        """Build API payload for check creation/update.
-
-        Returns:
-            Dict containing the API payload
-        """
-        return {
-            "name": self.name,
-            "type": self.type,
-            "enabled": self.enabled,
-            "tags": self.tags,
-            "locations": self.locations,
-            "frequency": self.frequency,
-            "timeout": self.timeout,
-        }
+            raise DeployerError("At least one location is required")
 
     def deploy(self, force: bool = False) -> None:
-        """Deploy the health check.
-
-        Args:
-            force: Whether to force deployment even if check exists
-
-        Raises:
-            DeployerError: If deployment fails
-        """
+        """Deploy the check."""
         try:
             self.validate()
             payload = self._build_api_payload()
 
-            existing_check = self._get_existing_check()
-            if existing_check:
-                if not force:
-                    logger.warning("Check %s already exists, use force=True to update", self.name)
-                    return
+            existing = self._get_existing_check()
+            if existing and not force:
+                logger.warning("Check %s already exists, use force=True to update", self.name)
+                return
+            elif existing and force:
                 self._update_check(payload)
             else:
                 self._create_check(payload)
-
         except Exception as e:
             raise DeployerError(f"Failed to deploy check {self.name}: {str(e)}")
 
-    def _get_existing_check(self) -> Optional[Dict[str, Any]]:
-        """Get existing check configuration if it exists.
+    def _build_api_payload(self) -> Dict[str, Any]:
+        """Build API payload."""
+        return {
+            "name": self.name,
+            "type": self.type,
+            "locations": self.locations,
+            "status": "live" if self.enabled else "paused",
+        }
 
-        Returns:
-            Existing check configuration or None
-        """
+    def _get_existing_check(self) -> Optional[Dict[str, Any]]:
+        """Get existing check configuration if it exists."""
         try:
             response = api.Synthetics.get_test(self.name)
             return response if response else None
-        except Exception:
-            return None
+        except Exception as e:
+            raise DeployerError(f"Failed to get check {self.name}: {str(e)}")
 
     def _create_check(self, payload: Dict[str, Any]) -> None:
         """Create a new health check.
@@ -113,11 +75,8 @@ class BaseCheck(ABC):
         Raises:
             DeployerError: If check creation fails
         """
-        try:
-            logger.info("Creating check: %s", self.name)
-            api.Synthetics.create_test(payload)
-        except Exception as e:
-            raise DeployerError(f"Failed to create check {self.name}: {str(e)}")
+        logger.info("Creating check: %s", self.name)
+        api.Synthetics.create_test(**payload)
 
     def _update_check(self, payload: Dict[str, Any]) -> None:
         """Update an existing health check.
@@ -128,11 +87,8 @@ class BaseCheck(ABC):
         Raises:
             DeployerError: If check update fails
         """
-        try:
-            logger.info("Updating check: %s", self.name)
-            api.Synthetics.update_test(self.name, payload)
-        except Exception as e:
-            raise DeployerError(f"Failed to update check {self.name}: {str(e)}")
+        logger.info("Updating check: %s", self.name)
+        api.Synthetics.update_test(self.name, payload)
 
     def delete(self) -> None:
         """Delete the health check.
@@ -164,13 +120,17 @@ class BaseCheck(ABC):
             raise DeployerError(f"Failed to get status for check {self.name}: {str(e)}")
 
     def get_results(
-        self, from_ts: Optional[int] = None, to_ts: Optional[int] = None
+        self,
+        from_ts: Optional[int] = None,
+        to_ts: Optional[int] = None,
+        include_response: bool = True,
     ) -> Dict[str, Any]:
         """Get check results.
 
         Args:
             from_ts: Start timestamp for results
             to_ts: End timestamp for results
+            include_response: Whether to include response details
 
         Returns:
             Dict containing check results
@@ -184,6 +144,9 @@ class BaseCheck(ABC):
                 from_ts=from_ts,
                 to_ts=to_ts,
             )
+            if not include_response and "results" in response:
+                for result in response["results"]:
+                    result.pop("response", None)
             return response
         except Exception as e:
             raise DeployerError(f"Failed to get results for check {self.name}: {str(e)}")
