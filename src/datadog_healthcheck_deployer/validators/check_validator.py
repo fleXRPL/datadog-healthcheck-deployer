@@ -23,6 +23,28 @@ class CheckValidator(BaseValidator):
                 "locations": {"type": "array", "items": {"type": "string"}},
                 "frequency": {"type": "integer", "minimum": 60},
                 "timeout": {"type": "integer", "minimum": 1},
+                # HTTP check fields
+                "url": {"type": "string"},
+                "method": {
+                    "type": "string",
+                    "enum": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+                },
+                "headers": {"type": "object", "additionalProperties": {"type": "string"}},
+                "body": {"type": "string"},
+                "status_code": {"type": "integer", "minimum": 100, "maximum": 599},
+                # SSL check fields
+                "host": {"type": "string"},
+                "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+                # DNS check fields
+                "domain": {"type": "string"},
+                "record_type": {
+                    "type": "string",
+                    "enum": ["A", "AAAA", "CNAME", "MX", "NS", "PTR", "SOA", "SRV", "TXT"],
+                },
+                "resolver": {"type": "string"},
+                # TCP check fields
+                "target_host": {"type": "string"},
+                "target_port": {"type": "integer", "minimum": 1, "maximum": 65535},
             },
         }
         super().__init__(schema)

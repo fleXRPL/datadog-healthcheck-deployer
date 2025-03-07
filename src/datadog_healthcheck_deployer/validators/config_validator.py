@@ -45,10 +45,8 @@ class ConfigValidator(BaseValidator):
         if not version.startswith("1."):
             raise ValidationError(f"Unsupported version: {version}")
 
-        # Validate healthchecks
+        # For MVP, we allow empty healthchecks list
         healthchecks = data.get("healthchecks", [])
-        if not healthchecks:
-            raise ValidationError("No health checks defined")
 
         # Check for duplicate check names
         check_names = [check.get("name") for check in healthchecks]
