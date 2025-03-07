@@ -38,14 +38,19 @@ class BaseCheck(ABC):
             self.validate()
             payload = self._build_api_payload()
 
-            existing = self._get_existing_check()
-            if existing and not force:
-                logger.warning("Check %s already exists, use force=True to update", self.name)
-                return
-            elif existing and force:
-                self._update_check(payload)
-            else:
-                self._create_check(payload)
+            try:
+                existing = self._get_existing_check()
+                if existing and not force:
+                    logger.warning("Check %s already exists, use force=True to update", self.name)
+                    return
+                elif existing and force:
+                    self._update_check(payload)
+                else:
+                    self._create_check(payload)
+            except Exception as e:
+                raise DeployerError(f"Failed to deploy check {self.name}: {str(e)}")
+        except DeployerError:
+            raise
         except Exception as e:
             raise DeployerError(f"Failed to deploy check {self.name}: {str(e)}")
 
@@ -75,8 +80,11 @@ class BaseCheck(ABC):
         Raises:
             DeployerError: If check creation fails
         """
-        logger.info("Creating check: %s", self.name)
-        api.Synthetics.create_test(**payload)
+        try:
+            logger.info("Creating check: %s", self.name)
+            api.Synthetics.create_test(**payload)
+        except Exception as e:
+            raise DeployerError(f"Failed to create check {self.name}: {str(e)}")
 
     def _update_check(self, payload: Dict[str, Any]) -> None:
         """Update an existing health check.
