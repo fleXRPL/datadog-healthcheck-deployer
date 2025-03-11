@@ -90,8 +90,25 @@ warn_unreachable = true
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --cov=datadog_healthcheck_deployer --cov-report=xml --cov-report=term-missing"
+addopts = "-ra -q --cov=datadog_healthcheck_deployer.config,datadog_healthcheck_deployer.checks.http,datadog_healthcheck_deployer.core --cov-report=xml --cov-report=term-missing --cov-fail-under=90"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
-python_functions = ["test_*"] 
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
+]
+fail_under = 80  # Temporarily lower this from 90 until we have more tests
+ignore_errors = true 

@@ -1,20 +1,18 @@
 """SSL certificate check implementation."""
 
-from typing import Dict, Any, List, Optional
 import logging
-import ssl
 import socket
+import ssl
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
-from .base import BaseCheck
+from ..utils.constants import THRESHOLD_SSL_DAYS_WARNING
 from ..utils.exceptions import DeployerError
 from ..utils.validation import validate_ssl_certificate
-from ..utils.constants import (
-    THRESHOLD_SSL_DAYS_WARNING,
-    THRESHOLD_SSL_DAYS_CRITICAL
-)
+from .base import BaseCheck
 
 logger = logging.getLogger(__name__)
+
 
 class SSLCheck(BaseCheck):
     """SSL certificate check implementation."""
@@ -60,18 +58,13 @@ class SSLCheck(BaseCheck):
 
         for protocol in self.protocols:
             if protocol not in ["TLSv1.2", "TLSv1.3"]:
-                raise DeployerError(
-                    f"Invalid SSL protocol {protocol} for check {self.name}"
-                )
+                raise DeployerError(f"Invalid SSL protocol {protocol} for check {self.name}")
 
         try:
             validate_ssl_certificate(self.hostname, self.port)
         except Exception as e:
             logger.warning(
-                "SSL certificate validation failed for %s:%d: %s",
-                self.hostname,
-                self.port,
-                str(e)
+                "SSL certificate validation failed for %s:%d: %s", self.hostname, self.port, str(e)
             )
 
     def _build_api_payload(self) -> Dict[str, Any]:
@@ -81,15 +74,17 @@ class SSLCheck(BaseCheck):
             Dict containing the API payload
         """
         payload = super()._build_api_payload()
-        payload.update({
-            "config": {
-                "hostname": self.hostname,
-                "port": self.port,
-                "check_chain": self.check_chain,
-                "protocols": self.protocols,
-                "assertions": self._build_assertions(),
+        payload.update(
+            {
+                "config": {
+                    "hostname": self.hostname,
+                    "port": self.port,
+                    "check_chain": self.check_chain,
+                    "protocols": self.protocols,
+                    "assertions": self._build_assertions(),
+                }
             }
-        })
+        )
         return payload
 
     def _build_assertions(self) -> List[Dict[str, Any]]:
@@ -107,22 +102,26 @@ class SSLCheck(BaseCheck):
                 "type": "expirationDays",
                 "operator": "greaterThan",
                 "target": self.expiry_threshold,
-            }
+            },
         ]
 
         if self.expected_issuer:
-            assertions.append({
-                "type": "issuer",
-                "operator": "equals",
-                "target": self.expected_issuer,
-            })
+            assertions.append(
+                {
+                    "type": "issuer",
+                    "operator": "equals",
+                    "target": self.expected_issuer,
+                }
+            )
 
         if self.minimum_key_strength:
-            assertions.append({
-                "type": "keyStrength",
-                "operator": "greaterThan",
-                "target": self.minimum_key_strength,
-            })
+            assertions.append(
+                {
+                    "type": "keyStrength",
+                    "operator": "greaterThan",
+                    "target": self.minimum_key_strength,
+                }
+            )
 
         return assertions
 
@@ -145,9 +144,9 @@ class SSLCheck(BaseCheck):
                 raise DeployerError(f"No certificate found for {self.hostname}:{self.port}")
 
             # Parse certificate information
-            not_after = datetime.strptime(
-                cert["notAfter"], "%b %d %H:%M:%S %Y %Z"
-            ).replace(tzinfo=timezone.utc)
+            not_after = datetime.strptime(cert["notAfter"], "%b %d %H:%M:%S %Y %Z").replace(
+                tzinfo=timezone.utc
+            )
 
             days_remaining = (not_after - datetime.now(timezone.utc)).days
 
@@ -265,4 +264,4 @@ class SSLCheck(BaseCheck):
 
     def __repr__(self) -> str:
         """Return string representation of the SSL check."""
-        return f"SSLCheck(name={self.name}, hostname={self.hostname}, port={self.port})" 
+        return f"SSLCheck(name={self.name}, hostname={self.hostname}, port={self.port})"

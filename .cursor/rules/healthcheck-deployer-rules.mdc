@@ -256,9 +256,10 @@ healthchecks:
 
 ## Globs
 - "**/*.py"              # Python source files
-- "**/*.yaml"           # YAML configuration files
-- "**/*.md"             # Documentation files
-- "requirements*.txt"   # Dependency files
-- ".github/**/*.yml"    # GitHub Actions workflows
-- "tests/**/*.py"       # Test files
-- "docs/**/*"           # Documentation files
+- "**/*.yaml"            # YAML configuration files
+- "**/*.md"              # Documentation files
+- "requirements*.txt"    # Dependency files
+- "requirements-dev.txt" # Dev Dependency files
+- ".github/**/*.yml"     # GitHub Actions workflows
+- "tests/**/*.py"        # Test files
+- "docs/**/*"            # Documentation files
