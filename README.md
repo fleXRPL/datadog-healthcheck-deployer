@@ -2,24 +2,24 @@
 
 #### versions
 
-[![PyPI version](https://img.shields.io/pypi/v/datadog-healthceck-deployer.svg)](https://pypi.org/project/datadog-healthceck-deployer/)
+[![PyPI version](https://img.shields.io/pypi/v/datadog-healthcheck-deployer.svg)](https://pypi.org/project/datadog-healthcheck-deployer/)
 [![Python Versions](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
-[![CI/CD Pipeline](https://github.com/fleXRPL/datadog-healthceck-deployer/actions/workflows/workflow.yml/badge.svg)](https://github.com/fleXRPL/datadog-healthceck-deployer/actions/workflows/workflow.yml)
-[![Python](https://img.shields.io/pypi/pyversions/datadog-healthceck-deployer.svg)](https://pypi.org/project/datadog-healthceck-deployer/)
+[![CI/CD Pipeline](https://github.com/fleXRPL/datadog-healthcheck-deployer/actions/workflows/workflow.yml/badge.svg)](https://github.com/fleXRPL/datadog-healthcheck-deployer/actions/workflows/workflow.yml)
+[![Python](https://img.shields.io/pypi/pyversions/datadog-healthcheck-deployer.svg)](https://pypi.org/project/datadog-healthceck-deployer/)
 
 #### health
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthceck-deployer&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthceck-deployer)
-[![Overall Coverage](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthceck-deployer&metric=coverage)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthceck-deployer)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthceck-deployer&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthceck-deployer)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthceck-deployer&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthceck-deployer)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthceck-deployer&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthceck-deployer)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthcheck-deployer&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthcheck-deployer)
+[![Overall Coverage](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthcheck-deployer&metric=coverage)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthcheck-deployer)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthcheck-deployer&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthcheck-deployer)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthcheck-deployer&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthcheck-deployer)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthcheck-deployer&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthcheck-deployer)
 [![Dependabot Status](https://img.shields.io/badge/Dependabot-enabled-success.svg)](https://github.com/fleXRPL/datadog-healthceck-deployer/blob/main/.github/dependabot.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 #### stats
 
-[![Downloads](https://pepy.tech/badge/datadog-healthceck-deployer)](https://pepy.tech/project/datadog-healthceck-deployer)
+[![Downloads](https://pepy.tech/badge/datadog-healthcheck-deployer)](https://pepy.tech/project/datadog-healthcheck-deployer)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A powerful Infrastructure-as-Code (IaC) tool for deploying and managing DataDog health checks, synthetic tests, and SLOs
