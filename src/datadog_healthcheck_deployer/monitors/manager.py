@@ -287,7 +287,9 @@ Status: {{{{check.status}}}}
                 monitor.id = existing[0].id
                 monitor.update()
             else:
-                monitor.create()
+                result = monitor.create()
+                if not result:
+                    raise MonitorError("Failed to create monitor", monitor.name)
         except Exception as e:
             raise MonitorError(f"Failed to deploy monitor: {str(e)}", monitor.name)
 
@@ -303,7 +305,9 @@ Status: {{{{check.status}}}}
         try:
             monitors = Monitor.search(f'name:"{check_name}"')
             for monitor in monitors:
-                monitor.delete()
+                result = monitor.delete()
+                if not result:
+                    raise MonitorError("Failed to delete monitor", monitor.name)
                 if monitor.name in self.monitors:
                     del self.monitors[monitor.name]
         except Exception as e:
