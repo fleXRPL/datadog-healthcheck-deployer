@@ -31,9 +31,76 @@ class BaseValidator(ABC, LoggerMixin):
         Raises:
             ValidationError: If validation fails
         """
-        # For MVP, we allow additional fields even in strict mode
-        # This can be made stricter in future versions
-        pass
+        # Validate required fields first
+        if "required" in self.schema:
+            self._validate_required_fields(data, self.schema["required"])
+
+        # Validate properties
+        if "properties" in self.schema:
+            for field, field_schema in self.schema["properties"].items():
+                if field in data:
+                    # Validate type
+                    if "type" in field_schema:
+                        type_map = {
+                            "string": str,
+                            "integer": int,
+                            "number": (int, float),
+                            "boolean": bool,
+                            "array": list,
+                            "object": dict,
+                        }
+                        expected_type = type_map.get(field_schema["type"])
+                        if expected_type:
+                            if not isinstance(data[field], expected_type):
+                                if field == "variables":
+                                    raise ValidationError("Variables must be a dictionary")
+                                elif field == "templates":
+                                    raise ValidationError("Templates must be a dictionary")
+                                elif field == "defaults":
+                                    raise ValidationError("Defaults must be a dictionary")
+                                else:
+                                    raise ValidationError(f"Invalid type for field {field}")
+
+                    # Validate enum
+                    if "enum" in field_schema:
+                        if data[field] not in field_schema["enum"]:
+                            enum_values = field_schema["enum"]
+                            if field == "method":
+                                raise ValidationError(
+                                    f"'{data[field]}' is not one of {enum_values}"
+                                )
+                            elif field == "type":
+                                raise ValidationError(
+                                    f"'{data[field]}' is not one of {enum_values}"
+                                )
+                            elif field == "record_type":
+                                raise ValidationError(
+                                    f"'{data[field]}' is not one of {enum_values}"
+                                )
+                            else:
+                                raise ValidationError(
+                                    f"'{data[field]}' is not one of {enum_values}"
+                                )
+
+                    # Validate minimum length
+                    if "minLength" in field_schema:
+                        if len(data[field]) < field_schema["minLength"]:
+                            raise ValidationError(f"Field {field} is too short")
+
+                    # Validate minimum value
+                    if "minimum" in field_schema:
+                        if data[field] < field_schema["minimum"]:
+                            raise ValidationError(f"Field {field} is too small")
+
+                    # Validate array items
+                    if "items" in field_schema:
+                        if not isinstance(data[field], list):
+                            raise ValidationError(f"Field {field} must be a list")
+                        for item in data[field]:
+                            if "type" in field_schema["items"]:
+                                expected_type = type_map.get(field_schema["items"]["type"])
+                                if expected_type and not isinstance(item, expected_type):
+                                    raise ValidationError(f"Invalid type for item in {field}")
 
     @abstractmethod
     def get_defaults(self) -> Dict[str, Any]:
@@ -65,7 +132,8 @@ class BaseValidator(ABC, LoggerMixin):
         """
         missing = [field for field in fields if field not in data]
         if missing:
-            raise ValidationError(f"Missing required fields: {', '.join(missing)}")
+            field = missing[0]  # Report first missing field
+            raise ValidationError(f"'{field}' is a required property")
 
     def _validate_field_type(self, value: Any, expected_type: type, field: str) -> None:
         """Validate field type.
@@ -95,9 +163,7 @@ class BaseValidator(ABC, LoggerMixin):
             ValidationError: If value is not in enum
         """
         if value not in valid_values:
-            raise ValidationError(
-                f"Invalid value for field {field}. Must be one of: {', '.join(map(str, valid_values))}"
-            )
+            raise ValidationError(f"'{value}' is not one of {valid_values}")
 
     def _validate_range(
         self,

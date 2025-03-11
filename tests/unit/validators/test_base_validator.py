@@ -52,7 +52,7 @@ def test_validate_required_fields(validator):
     data = {"test": "value"}
     validator._validate_required_fields(data, ["test"])
 
-    with pytest.raises(ValidationError, match="Missing required fields"):
+    with pytest.raises(ValidationError, match="'missing' is a required property"):
         validator._validate_required_fields(data, ["missing"])
 
 
@@ -69,7 +69,7 @@ def test_validate_enum(validator):
     """Test enum validation."""
     validator._validate_enum("a", ["a", "b", "c"], "enum_field")
 
-    with pytest.raises(ValidationError, match="Invalid value for field"):
+    with pytest.raises(ValidationError, match="'d' is not one of"):
         validator._validate_enum("d", ["a", "b", "c"], "enum_field")
 
 
