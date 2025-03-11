@@ -14,7 +14,7 @@
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthcheck-deployer&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthcheck-deployer)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthcheck-deployer&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthcheck-deployer)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=fleXRPL_datadog-healthcheck-deployer&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=fleXRPL_datadog-healthcheck-deployer)
-[![Dependabot Status](https://img.shields.io/badge/Dependabot-enabled-success.svg)](https://github.com/fleXRPL/datadog-healthceck-deployer/blob/main/.github/dependabot.yml)
+[![Dependabot Status](https://img.shields.io/badge/Dependabot-enabled-success.svg)](https://github.com/fleXRPL/datadog-healthcheck-deployer/blob/main/.github/dependabot.yml)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 #### stats
