@@ -24,6 +24,71 @@
 
 A powerful Infrastructure-as-Code (IaC) tool for deploying and managing DataDog health checks, synthetic tests, and SLOs
 
+## Installation
+
+```bash
+pip install datadog-healthcheck-deployer
+```
+
+## Quick Start
+
+1. Set up your DataDog credentials:
+
+```bash
+export DD_API_KEY="your-api-key"
+export DD_APP_KEY="your-app-key"
+```
+
+2. Create a health check configuration file `healthcheck.yaml`:
+
+```yaml
+version: "1.0"
+healthchecks:
+  - name: "Basic HTTP Check"
+    type: "http"
+    url: "https://api.example.com/health"
+    monitors:
+      availability:
+        enabled: true
+        threshold: 99.9
+```
+
+3. Deploy your health check:
+
+```bash
+dd-healthcheck deploy --file healthcheck.yaml
+```
+
+## Usage
+
+### CLI Commands
+
+```bash
+# Deploy health checks
+dd-healthcheck deploy --file <config-file>
+
+# Validate configuration
+dd-healthcheck validate --file <config-file>
+
+# List existing health checks
+dd-healthcheck list
+
+# Delete health checks
+dd-healthcheck delete --name <check-name>
+```
+
+### Configuration Reference
+
+See our [Configuration Guide](https://github.com/fleXRPL/datadog-healthcheck-deployer/wiki/Configuration-Guide) for detailed configuration options.
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](https://github.com/fleXRPL/datadog-healthcheck-deployer/wiki/Contributing) for details.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 ---
 
 ### Objective
@@ -37,27 +102,35 @@ Integrate with our existing [monitor](https://github.com/fleXRPL/datadog-healthc
 - DNS monitoring
 - Global availability checks
 
-## Proposed Structure:
+## Project Structure
 
 ```python
 datadog-healthcheck-deployer/
-├── src/
-│   └── datadog_healthcheck_deployer/
-│       ├── checks/
-│       │   ├── http_check.py
-│       │   ├── ssl_check.py
-│       │   ├── dns_check.py
-│       │   └── tcp_check.py
-│       ├── monitors/
-│       │   ├── latency_monitor.py
-│       │   ├── availability_monitor.py
-│       │   └── certificate_monitor.py
-│       └── slos/
-│           ├── availability_slo.py
-│           └── latency_slo.py
+├── examples
+│   └── dashboards
+│       ├── aws
+│       ├── common
+│       └── services
+├── scripts
+├── src
+│   ├── datadog_healthcheck_deployer
+│   │   ├── checks
+│   │   ├── dashboards
+│   │   ├── monitors
+│   │   ├── utils
+│   │   └── validators
+└── tests
+    └── unit
+        ├── checks
+        ├── dashboards
+        ├── monitors
+        ├── utils
+        └── validators
 ```
 
-2. Example configuration for a health check:
+## Configuration Examples
+
+### Health Check Configuration
 
 ```yaml
 healthchecks:
@@ -68,11 +141,11 @@ healthchecks:
       - "aws:us-east-1"
       - "aws:eu-west-1"
       - "gcp:asia-east1"
-    frequency: 60  # seconds
+    frequency: 60 # seconds
     timeout: 10
     success_criteria:
       - status_code: 200
-      - response_time: 1000  # ms
+      - response_time: 1000 # ms
     headers:
       X-API-Key: "{{API_KEY}}"
     monitors:
@@ -87,7 +160,7 @@ healthchecks:
       window: "30d"
 ```
 
-3. Integration with existing monitor deployer:
+### Integration Example
 
 ```python
 from datadog_monitor_deployer.deployer import MonitorDeployer
@@ -97,15 +170,15 @@ from datadog_healthcheck_deployer.slos import AvailabilitySLO
 class HealthCheckDeployer:
     def __init__(self, api_key: str, app_key: str):
         self.monitor_deployer = MonitorDeployer(api_key, app_key)
-        
+
     def deploy_health_check(self, config: dict):
         # Create the health check
         check = HttpCheck.from_config(config)
         check_id = check.create()
-        
+
         # Create associated monitors
         monitors = self._create_monitors(check, config)
-        
+
         # Create SLO if configured
         if 'slo' in config:
             slo = AvailabilitySLO(
@@ -116,7 +189,7 @@ class HealthCheckDeployer:
             slo.create()
 ```
 
-4. Example of a synthetic test [that could replace a platform like Catchpoint]:
+### Synthetic Test Configuration
 
 ```yaml
 synthetic_tests:
@@ -144,7 +217,7 @@ synthetic_tests:
       interval: 30
 ```
 
-5. Future State:
+## Future Features
 
 - Multi-step API checks
 - Custom assertion logic
@@ -156,10 +229,11 @@ synthetic_tests:
 - Anomaly detection
 - Integration with incident management systems
 
----
+## Benefits
 
-The goal would be to provide similar capabilities to Catchpoint while keeping everything within the DataDog ecosystem, which would:
-- Reduce costs
-- Simplify management
-- Provide better integration with existing monitoring
-- Enable unified alerting and reporting
+The goal is to provide similar capabilities to Catchpoint while keeping everything within the DataDog ecosystem, which:
+
+- Reduces costs
+- Simplifies management
+- Provides better integration with existing monitoring
+- Enables unified alerting and reporting
