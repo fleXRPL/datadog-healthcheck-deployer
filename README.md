@@ -5,7 +5,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/datadog-healthcheck-deployer.svg)](https://pypi.org/project/datadog-healthcheck-deployer/)
 [![Python Versions](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/downloads/)
 [![CI/CD Pipeline](https://github.com/fleXRPL/datadog-healthcheck-deployer/actions/workflows/workflow.yml/badge.svg)](https://github.com/fleXRPL/datadog-healthcheck-deployer/actions/workflows/workflow.yml)
-[![Python](https://img.shields.io/pypi/pyversions/datadog-healthcheck-deployer.svg)](https://pypi.org/project/datadog-healthceck-deployer/)
+[![Python](https://img.shields.io/pypi/pyversions/datadog-healthcheck-deployer.svg)](https://pypi.org/project/datadog-healthcheck-deployer/)
 
 #### health
 
