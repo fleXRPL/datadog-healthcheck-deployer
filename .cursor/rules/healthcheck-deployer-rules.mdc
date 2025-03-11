@@ -1,6 +1,7 @@
 ---
-description: 
+description: DataDog HealthCheck Deployer is a Python package that allows you to define, version, and deploy DataDog health checks using YAML/JSON configuration files. It integrates seamlessly with our existing datadog-monitor-deployer and datadog-dashboard-deployer tools, providing a complete solution for DataDog resource management.
 globs: 
+alwaysApply: false
 ---
  # DataDog HealthCheck Deployer Development Rules
 
